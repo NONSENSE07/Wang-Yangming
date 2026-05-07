@@ -1,0 +1,3140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>王阳明 · 此心光明</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;700&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet" onload="document.documentElement.classList.add('fonts-loaded')">
+<style>
+/* ========== CSS VARIABLES & THEMES ========== */
+:root {
+  --transition-speed: 0.6s;
+  --font-title: 'Ma Shan Zheng', cursive;
+  --font-body: 'Noto Serif SC', 'SimSun', serif;
+  --font-deco: 'ZCOOL XiaoWei', serif;
+
+  /* 色彩体系 — 宣纸·墨·朱砂 */
+  --bg-primary: #141218;
+  --bg-secondary: #1c1926;
+  --bg-card: rgba(28, 25, 38, 0.88);
+  --bg-overlay: rgba(8, 6, 12, 0.8);
+
+  --text-primary: #e6ddd0;
+  --text-secondary: #bfb09a;
+  --text-muted: #7d7168;
+
+  --accent: #bf3b2e;
+  --accent-glow: rgba(191, 59, 46, 0.35);
+  --accent-gold: #c9a24c;
+  --accent-gold-dim: rgba(201, 162, 76, 0.15);
+
+  --border-color: rgba(180, 160, 130, 0.18);
+  --border-color-strong: rgba(180, 160, 130, 0.3);
+  --quote-bg: rgba(191, 59, 46, 0.06);
+  --quote-border: #bf3b2e;
+  --paper: #f5f0e8;
+  --ink: #2c2420;
+  --particle-color: rgba(180, 160, 120, 0.12);
+  --seal-color: #bf3b2e;
+
+  /* 阴影系统 */
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 16px rgba(0,0,0,0.35);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --shadow-glow: 0 0 20px var(--accent-glow);
+}
+
+/* ========== BASE STYLES ========== */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.9;
+  overflow-x: hidden;
+  transition: background var(--transition-speed), color var(--transition-speed);
+  min-height: 100vh;
+}
+
+/* ========== CANVAS BACKGROUND ========== */
+#particle-canvas {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* ========== LAYOUT ========== */
+#app {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
+
+/* ========== THEME SWITCHER ========== */
+.theme-switcher {
+  position: fixed;
+  top: 20px; right: 20px;
+  z-index: 1000;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 7px 14px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  display: flex; align-items: center; gap: 6px;
+  letter-spacing: 0.05em;
+}
+.theme-switcher:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+.theme-switcher .icon { font-size: 1rem; }
+
+/* ========== PROGRESS BAR ========== */
+#progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-gold));
+  z-index: 1001;
+  transition: width 0.5s ease;
+  width: 0%;
+  box-shadow: 0 0 8px var(--accent-glow);
+}
+
+/* ========== TITLE SCREEN ========== */
+.title-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem;
+  text-align: center;
+  opacity: 1;
+  transition: opacity 1s ease;
+  position: relative;
+  background:
+    radial-gradient(ellipse 60% 50% at 50% 55%, rgba(201,162,76,0.04) 0%, transparent 70%);
+}
+.title-screen.hidden { opacity: 0; pointer-events: none; position: absolute; inset: 0; }
+
+.title-bg-text {
+  position: absolute;
+  font-family: var(--font-title);
+  font-size: clamp(6rem, 20vw, 15rem);
+  color: var(--text-primary);
+  opacity: 0.025;
+  letter-spacing: 0.3em;
+  user-select: none;
+  pointer-events: none;
+}
+
+.title-main {
+  font-family: var(--font-title);
+  font-size: clamp(2.5rem, 8vw, 5rem);
+  color: var(--text-primary);
+  letter-spacing: 0.2em;
+  margin-bottom: 1rem;
+  animation: titleFadeIn 2s ease-out;
+  text-shadow: 0 0 40px rgba(201,162,76,0.08);
+}
+
+.title-sub {
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 2.5vw, 1.15rem);
+  color: var(--text-secondary);
+  letter-spacing: 0.15em;
+  margin-bottom: 3rem;
+  animation: titleFadeIn 2s ease-out 0.5s both;
+  font-weight: 400;
+}
+
+.title-divider {
+  width: 80px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+  margin-bottom: 3rem;
+  animation: titleFadeIn 2s ease-out 0.8s both;
+}
+
+.title-seal {
+  width: 80px; height: 80px;
+  border: 2.5px solid var(--seal-color);
+  border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title);
+  color: var(--seal-color);
+  font-size: 1.5rem;
+  transform: rotate(-5deg);
+  margin-bottom: 2rem;
+  animation: titleFadeIn 2s ease-out 0.3s both;
+  position: relative;
+  opacity: 0.8;
+  box-shadow: 0 0 20px rgba(191,59,46,0.08);
+}
+.title-seal::after {
+  content: '';
+  position: absolute;
+  inset: 4px;
+  border: 1px solid var(--seal-color);
+  border-radius: 3px;
+  opacity: 0.4;
+}
+
+.title-buttons {
+  display: flex;
+  gap: 1.5rem;
+  animation: titleFadeIn 2s ease-out 1s both;
+}
+
+.btn {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 11px 32px;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.35s ease;
+  letter-spacing: 0.12em;
+  background: transparent;
+  color: var(--text-primary);
+  position: relative;
+  overflow: hidden;
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  transition: opacity 0.35s;
+}
+.btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 0 24px var(--accent-glow);
+  transform: translateY(-1px);
+}
+.btn:active { transform: translateY(0); }
+.btn-primary {
+  background: var(--accent);
+  color: #f5f0e8;
+  border-color: var(--accent);
+  letter-spacing: 0.15em;
+}
+.btn-primary:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+/* ========== CHAPTER CONTAINER ========== */
+#chapter-view {
+  display: none;
+  min-height: 100vh;
+  padding: 2rem 1.5rem;
+  max-width: 780px;
+  margin: 0 auto;
+}
+
+#chapter-view.active {
+  display: block;
+  animation: chapterTransition 0.6s ease-out;
+}
+
+.chapter-header {
+  text-align: center;
+  padding: 4rem 0 2.5rem;
+  animation: fadeInUp 0.8s ease-out;
+}
+
+.chapter-number {
+  font-family: var(--font-deco);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  margin-bottom: 0.6rem;
+}
+
+.chapter-title {
+  font-family: var(--font-title);
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  color: var(--text-primary);
+  letter-spacing: 0.15em;
+  margin-bottom: 0.6rem;
+}
+
+.chapter-era {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+}
+
+.chapter-divider {
+  width: 40px;
+  height: 1px;
+  background: var(--accent-gold);
+  margin: 1.2rem auto 0;
+  opacity: 0.5;
+}
+
+/* ========== CHAPTER ILLUSTRATION ========== */
+.chapter-illustration {
+  display: flex;
+  justify-content: center;
+  margin: 1.5rem 0 2rem;
+  opacity: 0;
+  animation: fadeInUp 1s ease-out 0.4s forwards;
+}
+.chapter-illustration svg {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+}
+
+.chapter-illustration .ink-bg {
+  fill: var(--bg-secondary);
+  transition: fill var(--transition-speed);
+}
+
+/* ========== NARRATIVE TEXT ========== */
+.scene-content {
+  animation: fadeInUp 0.8s ease-out 0.2s both;
+}
+
+.narrative-block {
+  margin-bottom: 1.8rem;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s, transform 0.6s;
+}
+.narrative-block.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.narrative-text {
+  font-size: 1.02rem;
+  line-height: 2.1;
+  color: var(--text-primary);
+  text-align: justify;
+}
+
+.narrative-text .highlight {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.narrative-text .emphasis {
+  border-bottom: 1.5px solid var(--accent-gold);
+  padding-bottom: 2px;
+}
+
+/* ========== QUOTE BLOCK ========== */
+.quote-block {
+  position: relative;
+  margin: 2.2rem 0;
+  padding: 1.4rem 1.8rem 1.4rem 2rem;
+  background: linear-gradient(135deg, var(--quote-bg), rgba(201,162,76,0.03));
+  border-left: 3px solid var(--quote-border);
+  border-radius: 0 4px 4px 0;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+  box-shadow: var(--shadow-sm);
+}
+
+.quote-text {
+  font-size: 1.05rem;
+  line-height: 2.1;
+  color: var(--text-primary);
+  font-style: italic;
+  letter-spacing: 0.04em;
+}
+
+.quote-source {
+  margin-top: 0.8rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  text-align: right;
+  letter-spacing: 0.05em;
+}
+
+.quote-block::after {
+  content: '引';
+  position: absolute;
+  top: -1px; right: 10px;
+  font-family: var(--font-title);
+  font-size: 2.2rem;
+  color: var(--seal-color);
+  opacity: 0.1;
+  line-height: 1;
+}
+
+/* ========== CHOICE BLOCK ========== */
+.choice-block {
+  margin: 2.5rem 0;
+  animation: fadeInUp 0.8s ease-out 0.3s both;
+}
+
+.choice-prompt {
+  font-size: 1.02rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.2rem;
+  padding-left: 1rem;
+  border-left: 2px solid var(--accent-gold);
+  line-height: 1.8;
+}
+
+.choice-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.choice-btn {
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  padding: 0.9rem 1.3rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: left;
+  line-height: 1.7;
+}
+.choice-btn:hover {
+  border-color: var(--accent);
+  transform: translateX(5px);
+  box-shadow: var(--shadow-glow);
+  background: rgba(191, 59, 46, 0.05);
+}
+.choice-btn.selected {
+  border-color: var(--accent);
+  background: rgba(191, 59, 46, 0.08);
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+
+.choice-feedback {
+  margin-top: 1rem;
+  padding: 1rem 1.4rem;
+  background: var(--bg-card);
+  border-left: 3px solid var(--accent-gold);
+  border-radius: 0 4px 4px 0;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.9;
+  animation: fadeInUp 0.5s ease-out;
+  display: none;
+}
+.choice-feedback.show { display: block; }
+
+/* ========== CHAPTER NAV ========== */
+.chapter-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 3rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.nav-btn {
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  padding: 9px 22px;
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 3px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.05em;
+}
+.nav-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: var(--shadow-glow);
+  transform: translateY(-1px);
+}
+
+.chapter-indicator {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  letter-spacing: 0.12em;
+  font-family: var(--font-deco);
+}
+
+/* ========== TIMELINE SIDEBAR ========== */
+.timeline-toggle {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  z-index: 999;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  backdrop-filter: blur(12px);
+  transition: all 0.3s ease;
+  box-shadow: var(--shadow-md);
+}
+.timeline-toggle:hover { border-color: var(--accent-gold); color: var(--accent-gold); }
+
+.timeline-panel {
+  position: fixed;
+  bottom: 70px; left: 20px;
+  width: 260px;
+  max-height: 55vh;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 1rem;
+  backdrop-filter: blur(14px);
+  overflow-y: auto;
+  z-index: 998;
+  display: none;
+  animation: fadeInUp 0.3s ease-out;
+  box-shadow: var(--shadow-lg);
+}
+.timeline-panel.open { display: block; }
+
+.timeline-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.7rem;
+  padding: 0.45rem 0;
+  cursor: pointer;
+  opacity: 0.45;
+  transition: all 0.3s ease;
+}
+.timeline-item:hover { opacity: 0.75; }
+.timeline-item.active { opacity: 1; }
+.timeline-item.visited { opacity: 0.6; }
+.timeline-item.current { opacity: 1; }
+
+.timeline-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-color-strong);
+  background: transparent;
+  flex-shrink: 0;
+  margin-top: 6px;
+  transition: all 0.3s;
+}
+.timeline-item.active .timeline-dot,
+.timeline-item.current .timeline-dot {
+  border-color: var(--accent);
+  background: var(--accent);
+  box-shadow: 0 0 6px var(--accent-glow);
+}
+
+.timeline-label {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+.timeline-label .tl-title { font-weight: 700; color: var(--text-primary); }
+.timeline-label .tl-year { color: var(--text-muted); }
+
+/* ========== INTERACTIVE SCENES ========== */
+.interactive-container {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  text-align: center;
+  animation: fadeInUp 0.8s ease-out;
+  box-shadow: var(--shadow-md);
+  backdrop-filter: blur(8px);
+}
+
+.interactive-title {
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+  letter-spacing: 0.15em;
+}
+
+.interactive-instruction {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.7;
+}
+
+/* -- Bamboo Scene -- */
+.bamboo-scene {
+  position: relative;
+  width: 200px; height: 350px;
+  margin: 1rem auto;
+  cursor: pointer;
+  transition: filter 3s;
+}
+.bamboo-scene .bamboo-stalk {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  background: linear-gradient(to top, #2d5016, #4a7c2e);
+  border-radius: 4px;
+  height: 100%;
+  transition: all 0.5s;
+}
+.bamboo-scene .bamboo-node {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px; height: 4px;
+  background: #3a6b1e;
+  border-radius: 2px;
+}
+.bamboo-scene .bamboo-leaf {
+  position: absolute;
+  width: 40px; height: 12px;
+  background: #4a7c2e;
+  border-radius: 0 60% 0 60%;
+  transform-origin: left center;
+  animation: leafSway 3s ease-in-out infinite;
+  transition: all 1s;
+}
+.bamboo-scene .bamboo-leaf:nth-child(2) { animation-delay: -1s; }
+.bamboo-scene .bamboo-leaf:nth-child(3) { animation-delay: -2s; }
+
+.bamboo-word {
+  position: absolute;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  opacity: 0;
+  animation: floatWord 2s ease-out forwards;
+  pointer-events: none;
+}
+
+.bamboo-timer {
+  font-family: var(--font-deco);
+  font-size: 2rem;
+  color: var(--accent);
+  margin: 1rem 0;
+}
+.bamboo-timer.danger { color: #e74c3c; }
+
+.bamboo-status {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 0.5rem;
+  min-height: 1.5em;
+}
+
+/* -- Longchang Enlightenment -- */
+.longchang-scene {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 6px;
+}
+
+.breath-circle {
+  width: 110px; height: 110px;
+  border-radius: 50%;
+  border: 1.5px solid var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 1.5rem;
+  transition: all 0.3s;
+  box-shadow: 0 0 20px rgba(180,160,120,0.04);
+}
+.breath-circle.inhale {
+  animation: breathInhale 4s ease-in-out;
+  border-color: var(--accent);
+  box-shadow: 0 0 30px var(--accent-glow);
+}
+.breath-circle.exhale {
+  animation: breathExhale 4s ease-in-out;
+  border-color: var(--accent-gold);
+  box-shadow: 0 0 30px rgba(201,162,76,0.15);
+}
+
+.breath-text {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  letter-spacing: 0.1em;
+}
+
+.enlightenment-flash {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #fff, #f5f0e8, transparent);
+  opacity: 0;
+  z-index: 2000;
+  pointer-events: none;
+  transition: opacity 0.5s;
+}
+.enlightenment-flash.active {
+  animation: flashBright 3s ease-out forwards;
+}
+
+.enlightenment-text {
+  font-family: var(--font-title);
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  color: var(--text-primary);
+  text-align: center;
+  opacity: 0;
+  letter-spacing: 0.15em;
+}
+.enlightenment-text.show {
+  animation: revealText 2s ease-out forwards;
+}
+
+/* -- Battle Map -- */
+.battle-scene {
+  position: relative;
+  padding: 1rem;
+}
+
+.battle-phase {
+  margin-bottom: 1.5rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 0.5s;
+}
+.battle-phase.active { opacity: 1; transform: translateY(0); }
+
+.battle-phase-title {
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.battle-situation {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.8;
+}
+
+.battle-result {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: var(--quote-bg);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.8;
+  display: none;
+}
+.battle-result.show { display: block; animation: fadeInUp 0.5s; }
+
+/* -- Mirror Scene -- */
+.mirror-scene {
+  position: relative;
+  padding: 1rem;
+}
+
+.mirror-container {
+  position: relative;
+  width: 180px; height: 180px;
+  margin: 1.5rem auto;
+  border-radius: 50%;
+  border: 2.5px solid var(--accent-gold);
+  overflow: hidden;
+  background: var(--bg-secondary);
+  box-shadow: 0 0 30px rgba(201,162,76,0.08);
+}
+
+.mirror-fog {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 40%, rgba(160,155,148,0.5), rgba(100,95,88,0.7));
+  transition: opacity 1s;
+}
+
+.mirror-clear {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, transparent 60%, rgba(201,162,76,0.08));
+  opacity: 0;
+  transition: opacity 0.8s;
+}
+.mirror-clear.revealed { opacity: 1; }
+
+.mirror-reflection {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  color: var(--accent-gold);
+  opacity: 0;
+  transition: opacity 1s;
+}
+.mirror-reflection.show { opacity: 1; }
+
+.mirror-scenario {
+  margin-bottom: 1.5rem;
+}
+.mirror-scenario-text {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  line-height: 1.9;
+}
+
+.mirror-progress {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+.mirror-dot {
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  border: 1.5px solid var(--border-color-strong);
+  background: transparent;
+  transition: all 0.3s;
+}
+.mirror-dot.done { background: var(--accent-gold); border-color: var(--accent-gold); box-shadow: 0 0 6px rgba(201,162,76,0.3); }
+
+/* -- Ending Scene -- */
+.ending-scene {
+  padding: 2rem 0;
+}
+
+.ending-review {
+  margin-bottom: 2rem;
+}
+
+.review-item {
+  display: flex;
+  gap: 1rem;
+  padding: 0.9rem 0;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.88rem;
+}
+.review-chapter { color: var(--text-muted); min-width: 110px; }
+.review-choice { color: var(--text-primary); }
+.review-comment { color: var(--accent); font-size: 0.82rem; margin-top: 0.3rem; }
+
+.ending-score {
+  text-align: center;
+  margin: 2rem 0;
+}
+.score-label {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin-bottom: 0.5rem;
+  letter-spacing: 0.1em;
+}
+.score-value {
+  font-family: var(--font-title);
+  font-size: 3rem;
+  color: var(--accent);
+  text-shadow: 0 0 30px var(--accent-glow);
+}
+.score-name {
+  font-size: 1.05rem;
+  color: var(--text-secondary);
+  margin-top: 0.4rem;
+  letter-spacing: 0.15em;
+}
+
+.ending-text {
+  max-width: 580px;
+  margin: 2rem auto;
+  padding: 2rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  text-align: center;
+  box-shadow: var(--shadow-md);
+}
+.ending-text p {
+  font-size: 1rem;
+  line-height: 2;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.final-quote {
+  font-family: var(--font-title);
+  font-size: clamp(1.5rem, 4vw, 2.2rem);
+  color: var(--accent-gold);
+  text-align: center;
+  padding: 2rem 0;
+  letter-spacing: 0.25em;
+  text-shadow: 0 0 30px rgba(201,162,76,0.1);
+}
+
+.restart-btn {
+  display: block;
+  margin: 2rem auto;
+}
+
+/* ========== ANIMATIONS ========== */
+@keyframes titleFadeIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes leafSway {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(5deg); }
+  75% { transform: rotate(-5deg); }
+}
+
+@keyframes floatWord {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(-60px) scale(0.8); }
+}
+
+@keyframes breathInhale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+}
+
+@keyframes breathExhale {
+  0%, 100% { transform: scale(1.4); }
+  50% { transform: scale(1); }
+}
+
+@keyframes flashBright {
+  0% { opacity: 0; }
+  15% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes revealText {
+  0% { opacity: 0; letter-spacing: 0.5em; }
+  100% { opacity: 1; letter-spacing: 0.15em; }
+}
+
+@keyframes chapterTransition {
+  0% { opacity: 0; transform: translateY(40px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+/* ========== INTERACTIVE HINTS & GUIDANCE ========== */
+@keyframes hintPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.9; }
+}
+
+@keyframes hintGlow {
+  0%, 100% { box-shadow: 0 0 0 0 var(--accent-glow); }
+  50% { box-shadow: 0 0 16px 4px var(--accent-glow); }
+}
+
+@keyframes hintSlideLeft {
+  0%, 100% { transform: translateX(0); opacity: 0.6; }
+  50% { transform: translateX(-4px); opacity: 1; }
+}
+
+@keyframes fingerBounce {
+  0%, 100% { transform: translateY(0) rotate(-15deg); }
+  50% { transform: translateY(-5px) rotate(-15deg); }
+}
+
+@keyframes choiceArrowBounce {
+  0%, 100% { transform: translateX(0); opacity: 0; }
+  30% { opacity: 0.8; }
+  70% { opacity: 0.8; }
+  100% { transform: translateX(6px); opacity: 0; }
+}
+
+/* Choice block hint */
+.choice-block::before {
+  content: '▼ 请做出你的选择';
+  display: block;
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  margin-bottom: 0.8rem;
+  padding: 5px 12px;
+  background: var(--accent-gold-dim);
+  border-radius: 3px;
+  animation: hintPulse 2.5s ease-in-out infinite;
+  letter-spacing: 0.1em;
+  text-align: center;
+  border: 1px solid rgba(201,162,76,0.1);
+}
+
+.choice-block.answered::before {
+  content: '✓ 已选择';
+  color: var(--accent-gold);
+  background: var(--accent-gold-dim);
+  animation: none;
+}
+
+/* Choice buttons hint arrow */
+.choice-btn:not(.selected)::after {
+  content: '→';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--accent-gold);
+  font-size: 0.9rem;
+  animation: choiceArrowBounce 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.choice-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.choice-btn:not(.selected):hover::after {
+  animation: none;
+  opacity: 0;
+}
+
+/* Click-trigger hint */
+.click-trigger-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.click-trigger-hint .hint-finger {
+  display: inline-block;
+  font-size: 1.1rem;
+  animation: fingerBounce 1.5s ease-in-out infinite;
+}
+
+.click-trigger-hint::after {
+  content: '— 点击此处 —';
+  display: block;
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  margin-top: 0.5rem;
+  animation: hintPulse 2s ease-in-out infinite;
+  letter-spacing: 0.12em;
+}
+
+.click-trigger-hint.triggered::after {
+  display: none;
+}
+
+/* Interactive container hint */
+.interactive-container > .interactive-title::after {
+  content: ' [ 互动体验 ]';
+  font-size: 0.65em;
+  color: var(--accent-gold);
+  vertical-align: middle;
+  opacity: 0.7;
+}
+
+.interactive-container > .interactive-instruction {
+  position: relative;
+  padding-left: 1.5rem;
+}
+
+.interactive-container > .interactive-instruction::before {
+  content: '👆';
+  position: absolute;
+  left: 0;
+  top: 0;
+  animation: fingerBounce 1.5s ease-in-out infinite;
+  font-size: 0.85rem;
+}
+
+/* Breath start button special */
+#breath-start-btn {
+  animation: hintGlow 2s ease-in-out infinite;
+  position: relative;
+}
+#breath-start-btn::before {
+  content: '👆 ';
+  animation: fingerBounce 1.5s ease-in-out infinite;
+}
+
+/* Bamboo scene extra hint */
+.bamboo-scene::after {
+  content: '👆 不断点击竹子';
+  position: absolute;
+  bottom: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 0.8rem;
+  color: var(--accent-gold);
+  animation: hintPulse 2s ease-in-out infinite;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Nav button hint on first chapter */
+.nav-btn.has-hint::after {
+  content: ' →';
+  animation: hintSlideLeft 1.5s ease-in-out infinite;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 640px) {
+  #chapter-view { padding: 1.2rem 1rem; }
+  .chapter-header { padding: 2.5rem 0 1.5rem; }
+  .quote-block { padding: 1rem 1.2rem; }
+  .interactive-container { padding: 1.2rem; }
+  .timeline-panel { width: 240px; bottom: 65px; left: 12px; }
+  .title-buttons { flex-direction: column; gap: 1rem; }
+  .btn { padding: 10px 28px; }
+  .battle-scene .choice-options { gap: 0.5rem; }
+  .choice-btn { padding: 0.75rem 1rem; font-size: 0.88rem; }
+}
+
+/* ========== SCROLLBAR ========== */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent-gold); }
+
+/* ========== MISC ========== */
+.text-center { text-align: center; }
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.fade-in { animation: fadeInUp 0.6s ease-out; }
+
+/* ========== SELECTION ========== */
+::selection {
+  background: rgba(201,162,76,0.2);
+  color: var(--text-primary);
+}
+
+/* ========== FOCUS ========== */
+:focus-visible {
+  outline: 1px solid var(--accent-gold);
+  outline-offset: 2px;
+}
+</style>
+</head>
+<body>
+
+<canvas id="particle-canvas"></canvas>
+<div id="progress-bar"></div>
+
+<div id="app">
+  <!-- TITLE SCREEN -->
+  <div class="title-screen" id="title-screen">
+    <div class="title-bg-text">心学</div>
+    <div class="title-seal">心学</div>
+    <h1 class="title-main">王阳明</h1>
+    <div class="title-divider"></div>
+    <p class="title-sub">以第一视角，走进五十七年的心学之路</p>
+    <div class="title-buttons">
+      <button class="btn btn-primary" onclick="startGame()">开始体验</button>
+      <button class="btn" onclick="showAbout()">关于此心光明</button>
+    </div>
+  </div>
+
+  <!-- CHAPTER VIEW -->
+  <div id="chapter-view"></div>
+</div>
+
+<!-- Timeline -->
+<button class="timeline-toggle" onclick="toggleTimeline()" id="tl-toggle" style="display:none;">📜</button>
+<div class="timeline-panel" id="timeline-panel"></div>
+
+<!-- Enlightenment flash overlay -->
+<div class="enlightenment-flash" id="enlightenment-flash"></div>
+
+<script>
+// ========== GAME DATA ==========
+const chapters = [
+  // Chapter 1
+  {
+    id: 1, title: "降生余姚", era: "成化八年（1472年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "成化八年（1472年），我生在浙江余姚。",
+        { text: "据说我出生后，整整五年没有开口说过话。家人以为我是哑巴，忧心忡忡。", class: "" },
+        "祖父王天叙为我改名「守仁」——守，是守住；仁，是天理。",
+        "改名之后，我才终于开口说话。",
+        { text: "话未到该说的时刻，何必开口？五年的沉默，不是我不会说话，是我在等一个名字，让我知道要说什么。", class: "highlight" },
+        { text: "这个名字，我等到了。", class: "emphasis" }
+      ]},
+      { type: "click-trigger", text: "点击此处，感受五年的沉默……", reveal: "终于，有人给了我一个名字。守仁——守住天理。我开口了。" }
+    ]
+  },
+  // Chapter 2
+  {
+    id: 2, title: "少年立志", era: "成化十九年（1483年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "十一岁那年，父亲王华高中状元，授翰林修撰，带我进京。",
+        "路过镇江金山寺，父亲与众友人雅集。金山浮于江心，古木苍苍，众人诗兴大发，大人们尚在构思，我已随口吟道——"
+      ]},
+      { type: "quote", text: "金山一点大如拳，打破维扬水底天。\n醉倚妙高台上月，玉箫吹彻洞龙眠。", source: "少年王阳明·金山寺即兴" },
+      { type: "narrative", paragraphs: [
+        "满座皆惊。众人只道是孩童才气，殊不知，写的是我心中的宇宙——山小如拳，却能打碎水中天；我在妙高台上，吹箫入梦，连洞中的龙都入眠了。",
+        { text: "不是写风景，是写我与天地对话的冲动。", class: "highlight" },
+        "但那时我心中已有一个问题，压也压不住——"
+      ]},
+      { type: "choice", prompt: "塾师问你：读书是为了什么？",
+        options: [
+          { text: "读书是为了科举登第，光耀门楣。", alignment: -5, feedback: "塾师点头微笑。父亲也会满意。但你知道，这不是你心底真正的答案。" },
+          { text: "第一等事，是做圣贤。", alignment: 10, feedback: "塾师笑你痴。大人们笑你痴。但你不为所动。这就是我一生的方向，从十一岁起，从未改变。" },
+          { text: "……我还不知道。", alignment: 2, feedback: "这个答案诚实地反映了少年的困惑。但心中有一个声音在说：科举不是终点。" }
+        ],
+        record: "读书之志"
+      },
+      { type: "quote", text: "\u201c发愤忘食\u201d是圣人之志如此，真无有已时；\u201c乐以忘忧\u201d是圣人之道如此，真无有戚时。", source: "《传习录》" },
+      { type: "narrative", paragraphs: [
+        { text: "做圣贤，不是为了功名，是为了让此心纯乎天理。", class: "highlight" }
+      ]}
+    ]
+  },
+  // Chapter 3 - Bamboo
+  {
+    id: 3, title: "格竹七日", era: "弘治五年（1492年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "二十一岁那年，我读朱子之书，笃信理学。",
+        "朱子说「格物致知」——天下万物各有其理，要逐一穷究，积少成多，豁然贯通。我深以为然，想找一条路，从最简单的事物入手，「格」出那个「理」来。",
+        "庭院里有几竿竹子，青青翠翠，最简单不过。我搬了椅子，坐在竹子面前，开始「格」。"
+      ]},
+      { type: "interactive", id: "bamboo" },
+      { type: "narrative", paragraphs: [
+        { text: "竹子的道理，不在竹子里。", class: "highlight" },
+        "那时我只以为是功夫不够，或者天资有限。后来才明白，问题是方向错了。",
+        "很多年后，我在《传习录》里对徐爱说——"
+      ]},
+      { type: "quote", text: "心即理也，天下又有心外之事、心外之理乎？", source: "《传习录·徐爱录》" },
+      { type: "narrative", paragraphs: [
+        "那时我还没有说出这句话。但竹子告诉我：向外求理，是走不通的。"
+      ]}
+    ]
+  },
+  // Chapter 4
+  {
+    id: 4, title: "上疏与廷杖", era: "正德元年（1506年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "弘治十八年（1505年），我三十三岁。这一年，我遇见了一个人——湛若水。",
+        "我们是在京城一次偶遇中相识的，一交谈，便觉得气味相投。湛若水也是立志做圣贤的人，不屑于科举功名那一套。我们共同发了一个愿：读书不是为了登第，是为了明本心、做圣贤。",
+        "但朝廷的情形，已让我无法沉默。",
+        "正德元年，宦官刘瑾把持朝政，排除异己，祸乱天下。南京御史戴铣等人上疏弹劾刘瑾，反被下狱，罪名是「忤旨」。"
+      ]},
+      { type: "choice", prompt: "戴铣因言获罪，你身为官员，如何抉择？",
+        options: [
+          { text: "上疏为戴铣等人鸣冤。明知会触怒刘瑾，但良知不容沉默。", alignment: 10, feedback: "你选择了直言。刘瑾大怒，廷杖四十。板子落下来的那一刻，你真正领教了皇权的重量。" },
+          { text: "沉默自保。朝廷险恶，留着有用之身，将来再说。", alignment: -3, feedback: "你选择了沉默。但良知不安——后来你上疏了，因为你知道，有些事不能等。" },
+          { text: "暗中联络更多同僚，联名上疏，人多力量大。", alignment: 5, feedback: "你选择了稳妥的方式。但刘瑾的怒火不会因为人多而减弱，廷杖四十，一板不少。" }
+        ],
+        record: "上疏抉择"
+      },
+      { type: "narrative", paragraphs: [
+        { text: "板子落下来的那一刻，我真正领教了皇权的重量。皮肉之痛倒在其次，更让我寒心的，是亲眼看见朝廷成了什么样子——直言进谏者受杖，奸佞横行者在朝。", class: "highlight" },
+        "廷杖之后，是一纸贬谪令：贵州龙场驿驿丞。",
+        "去贵州的路上，刘瑾不放心，又派人追杀我。我在钱塘江上，得到消息，做了一个决定——假装投水自尽，骗过追兵，才得以脱身。"
+      ]},
+      { type: "quote", text: "自吾去父母乡国而来此，三年矣，历瘴毒而苟能自全，以吾未尝一日之戚戚也。", source: "《瘗旅文》" },
+      { type: "narrative", paragraphs: [
+        { text: "淡到极致，反而静了。", class: "emphasis" }
+      ]}
+    ]
+  },
+  // Chapter 5 - Longchang
+  {
+    id: 5, title: "龙场悟道", era: "正德三年（1508年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        { text: "龙场。", class: "emphasis" },
+        "贵州西北，群山万壑，瘴气弥漫。驿丞是什么？不入流的杂役头，管几个往来公文的小吏，连一间像样的房子都没有。",
+        "我带着几个仆人，亲手搭了草庐。语言不通，瘴气逼人，仆从们相继病倒。我唱歌给他们听，宽慰他们，与他们同住同食。",
+        "政治上的冤屈，身体上的困顿，精神上的孤独——三重压力，一起压过来。",
+        "我反而静下来了。",
+        { text: "无官可做，无书可读，无人可以倾诉。我唯一能做的，就是面对自己这颗心。", class: "highlight" }
+      ]},
+      { type: "narrative", paragraphs: [
+        "我做了一具石棺，每夜躺在里面打坐，模拟自己已死——若我已经死了，还有什么放不下？"
+      ]},
+      { type: "interactive", id: "longchang" },
+      { type: "narrative", paragraphs: [
+        { text: "理不在竹子里，不在朱子的书里，不在任何外物里。理，就在我的本性里。", class: "highlight" },
+        "这后来成为我全部学说的根基：心即理。"
+      ]},
+      { type: "quote", text: "心即理也。天下又有心外之事、心外之理乎？\n且如事父，不成去父上求个孝的理；事君，不成去君上求个忠的理；交友、治民，不成去友上、民上求个信与仁的理。都只在此心，心即理也。", source: "《传习录·徐爱录》" }
+    ]
+  },
+  // Chapter 6
+  {
+    id: 6, title: "知行合一", era: "正德年间·复出讲学",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "龙场之后，刘瑾伏诛（1510年），我陆续复出，做过庐陵知县、南京鸿胪寺卿、江西巡抚。无论在哪里，我都在讲学。",
+        "弟子们最常问的，是一个问题：知行合一，究竟是什么意思？"
+      ]},
+      { type: "quote", text: "如今人尽有知得父当孝、兄当弟者，却不能孝、不能弟，便是知与行分明是两件。", source: "徐爱问" },
+      { type: "narrative", paragraphs: [
+        "这话问得好。世间多少人，知道该孝顺父母，却一辈子没做过一件孝顺的事；知道该诚实守信，说起话来却满口虚言。这不是「知而不行」吗？知和行，明明是两件啊。"
+      ]},
+      { type: "choice", prompt: "弟子问你：既然知和行分明是两件事，知行合一到底怎么讲？",
+        options: [
+          { text: "知而不行，不是真知，只是嘴上说说。真正的知，必然包含行动的力量。", alignment: 10, feedback: "这正是我的回答。" },
+          { text: "知和行本来就是两件事，但可以通过修炼让它们合一。", alignment: 3, feedback: "这个理解接近了，但还差一步——知和行从来就不是两件事，它们本是一体。" },
+          { text: "先知后行，知是行的准备，行是知的结果。", alignment: -3, feedback: "这是世间的常见误解。把知和行分作两件事，先去「求知」，然后才去「行动」，结果一辈子都没有行动，一辈子也没有真知。" }
+        ],
+        record: "知行之辨"
+      },
+      { type: "quote", text: "如好好色，如恶恶臭。见好色属知，好好色属行，只见那好色时已自好了，不是见了后又立个心去好；闻恶臭属知，恶恶臭属行，只闻那恶臭时已自恶了，不是闻了后别立个心去恶。", source: "《传习录·徐爱录》" },
+      { type: "narrative", paragraphs: [
+        { text: "知和行，不是两件事，是同一件事的两个面向。", class: "highlight" }
+      ]},
+      { type: "quote", text: "知是行的主意，行是知的功夫；知者行之始，行者知之成。", source: "《传习录·答顾东桥书》" }
+    ]
+  },
+  // Chapter 7
+  {
+    id: 7, title: "心即理", era: "讲学时期",
+    scenes: [
+      { type: "quote", text: "至善只求诸心，恐于天下事理有不能尽？", source: "徐爱问" },
+      { type: "narrative", paragraphs: [
+        "意思是：只在自己心上求至善，恐怕天下的事理，不能都穷尽吧？",
+        { text: "我的回答斩钉截铁：心即理也。天下又有心外之事、心外之理乎？", class: "highlight" }
+      ]},
+      { type: "quote", text: "如树木，这诚孝的心便是根，许多条件便是枝叶。须先有根，然后有枝叶，不是先寻了枝叶，然后去种根。", source: "《传习录·徐爱录》" },
+      { type: "narrative", paragraphs: [
+        "孝顺的仪节——冬温夏凊、昏定晨省——就像枝叶；那颗诚孝的心，就像树根。",
+        { text: "没有深爱做根，枝叶从哪里来？有了深爱做根，枝叶自然生长。", class: "highlight" }
+      ]},
+      { type: "quote", text: "《礼记》言：「孝子之有深爱者，必有和气。有和气者，必有愉色。有愉色者，必有婉容。」须是有个深爱做根，便自然如此。", source: "《传习录·徐爱录》" },
+      { type: "narrative", paragraphs: [
+        { text: "一切的道德规范、一切的礼节仪文，都从心上长出来；根正则叶茂，根坏则叶枯。", class: "highlight" }
+      ]}
+    ]
+  },
+  // Chapter 8
+  {
+    id: 8, title: "主一功夫", era: "讲学时期",
+    scenes: [
+      { type: "quote", text: "主一之功，如读书则一心在读书上，接客则一心在接客上，可以为主一乎？", source: "陆澄问" },
+      { type: "narrative", paragraphs: [
+        "他的理解是：做事的时候专心做事，就是主一。"
+      ]},
+      { type: "choice", prompt: "你觉得什么是「主一」的功夫？",
+        options: [
+          { text: "专心做眼前的事，不分心，就是主一。", alignment: 0, feedback: "这是陆澄的理解，也是世人的普遍看法。但我告诉他：这不是主一，这是逐物。" },
+          { text: "不管做什么事，心里始终有个天理做主，被天理牵引而非被外物牵引。", alignment: 10, feedback: "对了。主一不是专注于外物，而是专注于天理。被外物牵引，是逐物；被天理主宰，才是主一。" },
+          { text: "主一是找到自己内心真正认定的一件事，然后一生只做这件事。", alignment: 5, feedback: "这个理解有深度，但还不够精确。主一的关键不在于「一件事」，而在于「一个天理」——不管做多少事，都由天理主导。" }
+        ],
+        record: "主一之辨"
+      },
+      { type: "quote", text: "\u201c好色则一心在好色上，好货则一心在好货上，可以为主一乎？是所谓逐物，非主一也。主一是专主一个天理。\u201d", source: "《传习录·陆澄录》" },
+      { type: "narrative", paragraphs: [
+        "就像有人拥有一块万镒精金，不去锻炼成色，却只在分量上比多少，把锡、铅、铜、铁都掺进去，分量越增，成色越下。",
+        { text: "后人学圣人，不是从心上求，是从知识上求。结果知识越来越多，天理越来越蔽塞。", class: "highlight" }
+      ]}
+    ]
+  },
+  // Chapter 9 - Battle
+  {
+    id: 9, title: "平宁王", era: "正德十四年（1519年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        { text: "正德十四年（1519年），宁王朱宸濠叛乱。", class: "emphasis" },
+        "宁王经营十年，兵强马壮，蓄谋已久。朝廷正规军远在千里。我手里只有赣南数千地方民壮。",
+        "没有人给我命令，没有人给我授权。",
+        { text: "没有犹豫。我立刻开始行动。", class: "highlight" }
+      ]},
+      { type: "interactive", id: "battle" },
+      { type: "narrative", paragraphs: [
+        { text: "三十五天。从起兵到覆灭，前后不过三十五天，宁王被擒。", class: "highlight" },
+        "事后，有人弹劾我：功劳太大，必有异心。我把所有赏赐交出，只求归乡讲学。",
+        { text: "这一仗，不是为了功名，是因为——我知道该出手，就必然出手。这就是知行合一。", class: "emphasis" }
+      ]}
+    ]
+  },
+  // Chapter 10
+  {
+    id: 10, title: "虔州论学", era: "嘉靖元年（1521年）前后",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "嘉靖改元前后，我在江西虔州讲学。这段时期，是我晚年思想最成熟的阶段。",
+        "一天，在虔州与于中、国裳等同侍。"
+      ]},
+      { type: "quote", text: "\u201c人胸中各有个圣人，只自信不及，都自埋倒了。\u201d", source: "王阳明语" },
+      { type: "narrative", paragraphs: [
+        "于中听了，站起身来，连说「不敢当」。",
+        "我说：「尔胸中原是圣人。」「此是尔自家有的，如何要推？」",
+        "于中还是不敢当。",
+        "我说：「众人皆有之，况在于中？却何故谦起来？谦亦不得。」",
+        "于中于是笑着接受了。"
+      ]},
+      { type: "quote", text: "良知在人，随你如何不能泯灭，虽盗贼亦自知不当为盗，唤他怍贼，他还怃怃。", source: "《传习录》" },
+      { type: "narrative", paragraphs: [
+        "盗贼知道偷盗不对，叫他一声贼，他还会害羞。连盗贼都有良知，何况常人？",
+        { text: "太阳被云遮住了，太阳没有消失。良知被私欲遮蔽了，良知也没有消失。它一直在那里，只是被遮住了。", class: "highlight" },
+        { text: "为学不是去外面找良知，是把遮蔽去掉，让它重新发用。这就是「致良知」。", class: "emphasis" }
+      ]}
+    ]
+  },
+  // Chapter 11
+  {
+    id: 11, title: "簿书讼狱之间", era: "任职巡抚期间",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "有一任属官，久听我讲学，说：「此学甚好，只是簿书讼狱繁难，不得为学。」",
+        "簿书讼狱，就是日常公务，判决案件，处理文书，太忙了，没办法静下心来学。"
+      ]},
+      { type: "choice", prompt: "你如何回应这位属官？",
+        options: [
+          { text: "离开公务去静修，才能为学。等公务清闲了再学不迟。", alignment: -5, feedback: "这是那个属官的想法，不是我的。我说：「我何尝教尔离了簿书讼狱，悬空去讲学？」" },
+          { text: "就在公务中为学。每一个判决的念头，都让良知做主。", alignment: 10, feedback: "正是如此。学问，要在事上磨炼。" },
+          { text: "白天处理公务，晚上静坐反省。", alignment: 2, feedback: "这个想法虽好，但还是把「学」和「事」分开了。真正的格物，就在事务之中。" }
+        ],
+        record: "事上磨练"
+      },
+      { type: "quote", text: "如问一词讼，不可因其应付无状，起个怒心；不可因他言语圆转，生个喜心；不可恶其嘱托，加意治之；不可因其请求，屈意从之；不可因自己事务烦冗，随意苟且断之；不可因旁人谮毁罗织，随人意思处之。这许多意思皆私，只尔自知，须精细省察克治，惟恐此心有一毫偏倚，枉人是非。这便是「格物」「致知」。", source: "《传习录》" },
+      { type: "narrative", paragraphs: [
+        { text: "簿书讼狱之间，无非实学。若离了事物为学，却是着空。", class: "highlight" },
+        { text: "每一个念头，都让良知做主。这才是真正的格物致知。", class: "emphasis" }
+      ]}
+    ]
+  },
+  // Chapter 12 - Mirror
+  {
+    id: 12, title: "致良知", era: "嘉靖初年",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "嘉靖初年，我将毕生参悟，凝成三个字：致良知。",
+        "什么叫良知？就是每个人与生俱来的那一点是非之心、善恶之辨。它不需要学，不需要问，它就在你心里。"
+      ]},
+      { type: "interactive", id: "mirror" },
+      { type: "narrative", paragraphs: [
+        { text: "一念良知，可以应天下万事。", class: "highlight" },
+        "这就是「致良知」三个字的全部含义。"
+      ]},
+      { type: "quote", text: "盖天下之事虽千变万化，至于不可穷诘，而但惟致此事亲从兄一念真诚恻怛之良知以应之，则更无有遗缺渗漏者，正谓其只有此一个良知故也。", source: "《传习录·答聂文蔚书》" }
+    ]
+  },
+  // Chapter 13
+  {
+    id: 13, title: "四句教", era: "晚年",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "晚年，我留下了一篇最精炼的教言，后人称为「四句教」。"
+      ]},
+      { type: "quote", text: "无善无恶心之体，\n有善有恶意之动，\n知善知恶是良知，\n为善去恶是格物。", source: "王阳明·四句教" },
+      { type: "narrative", paragraphs: [
+        { text: "第一句：心之本体，无善无恶。心本来是清澈的，像一面干净的镜子，没有善恶的先入之见。", class: "" },
+        { text: "第二句：意之动，有善有恶。但念头一动，意一发，就有善有恶了。意会被私欲遮蔽，产生偏差。", class: "" },
+        { text: "第三句：良知，知善知恶。好在什么地方？坏在什么地方？良知自有分辨，不需要外求。", class: "" },
+        { text: "第四句：格物，为善去恶。在每一件事上，把恶念去掉，把善念扩充，这就是格物，也就是致良知。", class: "highlight" },
+        { text: "四句教，把心学的全部纲领说得清清楚楚：从本体，到意念，到良知分辨，到格物工夫——这是完整的路径。", class: "emphasis" }
+      ]}
+    ]
+  },
+  // Chapter 14 - Ending
+  {
+    id: 14, title: "此心光明", era: "嘉靖六年（1527年）—嘉靖七年（1529年）",
+    scenes: [
+      { type: "narrative", paragraphs: [
+        "嘉靖六年（1527年），我已年近六旬。身体早已不如从前，常年咳血，病痛缠身。",
+        "朝廷再次下诏：广西思田地区少数民族起事，命我前往平定。",
+        "弟子们都劝我不要去。我知道自己可能回不来。但我还是出发了。",
+        { text: "因为我知道该去，我就必然去。这就是致良知。", class: "highlight" },
+        "叛乱很快平定了。我用怀柔之策，招抚为主，不愿多杀伤一人。",
+        "归途中，病势日益沉重。到了广西南安府（今大余县），已无法行走。"
+      ]},
+      { type: "narrative", paragraphs: [
+        "钱德洪问我：先生，有何遗言？",
+        "我笑了笑，看着窗外，说了最后一句话——"
+      ]},
+      { type: "quote", text: "此心光明，亦复何言。", source: "王阳明·临终遗言" },
+      { type: "interactive", id: "ending" }
+    ]
+  }
+];
+
+// ========== GAME STATE ==========
+const state = {
+  currentChapter: -1,
+  mindScore: 50,
+  choices: [],
+  interactiveStates: {},
+  visitedChapters: new Set(),
+  started: false
+};
+
+// ========== PARTICLE SYSTEM ==========
+const canvas = document.getElementById('particle-canvas');
+const ctx = canvas.getContext('2d');
+let particles = [];
+
+function resizeCanvas() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
+class Particle {
+  constructor() { this.reset(); }
+  reset() {
+    this.x = Math.random() * canvas.width;
+    this.y = Math.random() * canvas.height;
+    this.size = Math.random() * 2 + 0.5;
+    this.speedX = (Math.random() - 0.5) * 0.2;
+    this.speedY = (Math.random() - 0.5) * 0.15 - 0.05;
+    this.opacity = Math.random() * 0.2 + 0.03;
+    this.life = Math.random() * 600 + 200;
+    this.age = 0;
+  }
+  update() {
+    this.x += this.speedX;
+    this.y += this.speedY;
+    this.age++;
+    if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height || this.age > this.life) this.reset();
+  }
+  draw() {
+    const fade = 1 - (this.age / this.life);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(180, 160, 120, ${this.opacity * fade})`;
+    ctx.fill();
+  }
+}
+
+for (let i = 0; i < 40; i++) particles.push(new Particle());
+
+function animateParticles() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  particles.forEach(p => { p.update(); p.draw(); });
+  requestAnimationFrame(animateParticles);
+}
+animateParticles();
+
+// ========== GAME FLOW ==========
+function showAbout() {
+  const chapterView = document.getElementById('chapter-view');
+  chapterView.classList.add('active');
+  chapterView.innerHTML = `
+    <div class="chapter-header">
+      <div class="chapter-number">关于</div>
+      <h2 class="chapter-title">此心光明</h2>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="scene-content">
+      <div class="narrative-block visible">
+        <p class="narrative-text">
+          这是一个以<span class="highlight">王阳明第一人称叙述</span>为核心的互动体验网页。
+        </p>
+      </div>
+      <div class="narrative-block visible" style="animation-delay: 0.2s">
+        <p class="narrative-text">
+          王阳明（1472—1529），名守仁，浙江余姚人，明代思想家、军事家、教育家。他创立的<span class="highlight">阳明心学</span>，以「心即理」、」知行合一「、」致良知「为核心，影响了此后数百年的中国思想史，并远播日本、朝鲜。
+        </p>
+      </div>
+      <div class="narrative-block visible" style="animation-delay: 0.4s">
+        <p class="narrative-text">
+          本文内容基于王阳明原典——<span class="emphasis">《传习录》《王阳明全集》《瘗旅文》</span>等——以第一人称重构他五十七年的人生与思想演进。
+        </p>
+      </div>
+      <div class="narrative-block visible" style="animation-delay: 0.6s">
+        <p class="narrative-text">
+          在体验过程中，你将以王阳明的视角经历他人生的关键时刻，在<span class="highlight">格竹、悟道、平叛、致良知</span>等节点做出自己的选择。你的每一个选择都会影响最终的「心之明度」——它决定了你将以怎样的心境走完这段心学之路。
+        </p>
+      </div>
+      <div class="quote-block">
+        <p class="quote-text">圣人之道，吾性自足，向之求理于事物者误也！</p>
+        <p class="quote-source">王阳明·龙场悟道</p>
+      </div>
+    </div>
+    <div class="chapter-nav">
+      <button class="nav-btn" onclick="closeAbout()">返回</button>
+    </div>
+  `;
+}
+
+function closeAbout() {
+  document.getElementById('chapter-view').classList.remove('active');
+  document.getElementById('chapter-view').innerHTML = '';
+}
+
+function startGame() {
+  state.started = true;
+  document.getElementById('title-screen').classList.add('hidden');
+  document.getElementById('tl-toggle').style.display = 'flex';
+  buildTimeline();
+  setTimeout(() => { navigateToChapter(0); }, 800);
+}
+
+// ========== CHAPTER RENDERING ==========
+function navigateToChapter(index) {
+  if (index < 0 || index >= chapters.length) return;
+  state.currentChapter = index;
+  state.visitedChapters.add(index);
+  updateProgress();
+  updateTimeline();
+  renderChapter(chapters[index]);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  // Close timeline if open
+  document.getElementById('timeline-panel').classList.remove('open');
+}
+
+function renderChapter(chapter) {
+  const view = document.getElementById('chapter-view');
+  view.classList.add('active');
+  view.style.animation = 'chapterTransition 0.6s ease-out';
+
+  let html = `
+    <div class="chapter-header">
+      <div class="chapter-number">第${chapter.id}章</div>
+      <h2 class="chapter-title">${chapter.title}</h2>
+      <div class="chapter-era">${chapter.era}</div>
+      <div class="chapter-divider"></div>
+    </div>
+    <div class="chapter-illustration">${getChapterIllustration(chapter.id)}</div>
+    <div class="scene-content" id="scene-content">
+  `;
+
+  chapter.scenes.forEach((scene, si) => {
+    html += renderScene(scene, si);
+  });
+
+  html += `</div>`;
+  html += renderNav(chapter.id);
+
+  view.innerHTML = html;
+
+  // Trigger narrative block visibility
+  setTimeout(() => {
+    const blocks = view.querySelectorAll('.narrative-block');
+    blocks.forEach((block, i) => {
+      setTimeout(() => block.classList.add('visible'), i * 300);
+    });
+    // Init interactive scenes
+    initInteractive(chapter);
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, 100);
+}
+
+function renderScene(scene, index) {
+  switch (scene.type) {
+    case 'narrative':
+      return scene.paragraphs.map((p, i) => {
+        const text = typeof p === 'string' ? p : p.text;
+        const cls = typeof p === 'string' ? '' : (p.class || '');
+        return `<div class="narrative-block" style="animation-delay: ${index * 0.1 + i * 0.2}s">
+          <p class="narrative-text ${cls}">${text}</p>
+        </div>`;
+      }).join('');
+
+    case 'quote':
+      return `<div class="quote-block" style="animation-delay: ${index * 0.1}s">
+        <p class="quote-text">${scene.text.replace(/\n/g, '<br>')}</p>
+        <p class="quote-source">—— ${scene.source}</p>
+      </div>`;
+
+    case 'choice':
+      return `<div class="choice-block" style="animation-delay: ${index * 0.1}s">
+        <div class="choice-prompt">${scene.prompt}</div>
+        <div class="choice-options" data-choice-id="${scene.record}">
+          ${scene.options.map((opt, oi) => `
+            <button class="choice-btn" data-alignment="${opt.alignment}" data-index="${oi}" onclick="makeChoice(this, '${scene.record}', ${opt.alignment})">${opt.text}</button>
+          `).join('')}
+        </div>
+        <div class="choice-feedback" id="feedback-${scene.record}"></div>
+      </div>`;
+
+    case 'interactive':
+      return renderInteractive(scene.id, index);
+
+    case 'click-trigger':
+      return `<div class="narrative-block text-center" style="animation-delay: ${index * 0.1}s">
+        <div class="click-trigger-hint" style="color: var(--accent); font-size: 1.1rem;" onclick="triggerClickHint(this, '${scene.reveal.replace(/'/g, "\\'")}')">
+          <span class="hint-finger">👆</span>
+          <span class="narrative-text">${scene.text}</span>
+        </div>
+      </div>`;
+
+    default:
+      return '';
+  }
+}
+
+function renderInteractive(id, index) {
+  switch (id) {
+    case 'bamboo':
+      return `<div class="interactive-container" id="bamboo-container" style="animation-delay: ${index * 0.1}s">
+        <div class="interactive-title">格竹</div>
+        <div class="interactive-instruction">点击竹子，试图「格」出其中的道理</div>
+        <div class="bamboo-timer" id="bamboo-timer">60</div>
+        <div class="bamboo-scene" id="bamboo-scene" onclick="clickBamboo(event)">
+          <div class="bamboo-stalk"></div>
+          <div class="bamboo-node" style="top: 20%"></div>
+          <div class="bamboo-node" style="top: 45%"></div>
+          <div class="bamboo-node" style="top: 70%"></div>
+          <div class="bamboo-leaf" style="top: 15%; left: calc(50% + 4px);"></div>
+          <div class="bamboo-leaf" style="top: 40%; left: calc(50% + 4px); transform: scaleX(-1);"></div>
+          <div class="bamboo-leaf" style="top: 65%; left: calc(50% + 4px);"></div>
+        </div>
+        <div class="bamboo-status" id="bamboo-status">第一天，竹子是竹子，我还是我。</div>
+      </div>`;
+
+    case 'longchang':
+      return `<div class="interactive-container" id="longchang-container" style="animation-delay: ${index * 0.1}s">
+        <div class="interactive-title">龙场悟道</div>
+        <div class="interactive-instruction">跟随圆圈的节奏，做三次深呼吸</div>
+        <div class="longchang-scene" id="longchang-scene">
+          <div class="breath-circle" id="breath-circle"></div>
+          <div class="breath-text" id="breath-text">点击开始</div>
+        </div>
+        <button class="btn mt-2" id="breath-start-btn" onclick="startBreathing()">开始冥想</button>
+      </div>`;
+
+    case 'battle':
+      return `<div class="interactive-container" id="battle-container" style="animation-delay: ${index * 0.1}s; text-align: left;">
+        <div class="interactive-title text-center">平宁王</div>
+        <div class="interactive-instruction text-center">在三个关键节点做出你的战术决策</div>
+        <div class="battle-scene" id="battle-scene">
+          <div class="battle-phase active" id="battle-phase-0">
+            <div class="battle-phase-title">第一轮：初闻叛乱</div>
+            <div class="battle-situation">宁王经营十年，兵强马壮，刚在南昌起兵。朝廷大军远在千里之外，你手里只有赣南数千地方民壮。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="battleChoice(0, 0)">立刻集结兵马，直接进攻南昌</button>
+              <button class="choice-btn" onclick="battleChoice(0, 1)">伪造兵部公文，声称四路大军已围攻南昌，迷惑宁王</button>
+              <button class="choice-btn" onclick="battleChoice(0, 2)">按兵不动，等待朝廷旨意</button>
+            </div>
+            <div class="battle-result" id="battle-result-0"></div>
+          </div>
+          <div class="battle-phase" id="battle-phase-1">
+            <div class="battle-phase-title">第二轮：宁王回救</div>
+            <div class="battle-situation">宁王收到「朝廷大军」的消息后犹豫了十余天，终于回师救援南昌。此时你已攻下南昌，宁王大军逼近。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="battleChoice(1, 0)">在南昌城内坚守，以逸待劳</button>
+              <button class="choice-btn" onclick="battleChoice(1, 1)">主动出击，在鄱阳湖设伏迎击</button>
+              <button class="choice-btn" onclick="battleChoice(1, 2)">放弃南昌，退守赣南</button>
+            </div>
+            <div class="battle-result" id="battle-result-1"></div>
+          </div>
+          <div class="battle-phase" id="battle-phase-2">
+            <div class="battle-phase-title">第三轮：决战时刻</div>
+            <div class="battle-situation">鄱阳湖上，宁王战船连樯，遮天蔽日。你的兵力远不如人，但士气正盛。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="battleChoice(2, 0)">正面冲击，以勇气破敌</button>
+              <button class="choice-btn" onclick="battleChoice(2, 1)">命人驾小船满载柴草，冲入船阵纵火</button>
+              <button class="choice-btn" onclick="battleChoice(2, 2)">派使者劝降，晓以利害</button>
+            </div>
+            <div class="battle-result" id="battle-result-2"></div>
+          </div>
+        </div>
+      </div>`;
+
+    case 'mirror':
+      return `<div class="interactive-container" id="mirror-container" style="animation-delay: ${index * 0.1}s; text-align: left;">
+        <div class="interactive-title text-center">致良知 · 明镜</div>
+        <div class="interactive-instruction text-center">良知如镜，本自光明。回答四个问题，看看你的镜子有多明亮。</div>
+        <div class="mirror-scene" id="mirror-scene">
+          <div class="mirror-container" id="mirror-container-inner">
+            <div class="mirror-fog" id="mirror-fog"></div>
+            <div class="mirror-clear" id="mirror-clear-0" style="top:5%;left:10%;width:45%;height:45%;"></div>
+            <div class="mirror-clear" id="mirror-clear-1" style="top:5%;left:50%;width:45%;height:45%;"></div>
+            <div class="mirror-clear" id="mirror-clear-2" style="top:50%;left:10%;width:45%;height:45%;"></div>
+            <div class="mirror-clear" id="mirror-clear-3" style="top:50%;left:50%;width:45%;height:45%;"></div>
+            <div class="mirror-reflection" id="mirror-reflection">良知</div>
+          </div>
+          <div class="mirror-progress" id="mirror-progress">
+            <div class="mirror-dot" id="md-0"></div>
+            <div class="mirror-dot" id="md-1"></div>
+            <div class="mirror-dot" id="md-2"></div>
+            <div class="mirror-dot" id="md-3"></div>
+          </div>
+          <div class="mirror-scenario" id="mirror-scenario-0">
+            <div class="mirror-scenario-text">你发现一位同事在背后说你的坏话，甚至添油加醋。后来你需要他协助完成一个重要项目。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="mirrorChoice(0, -5)">记仇，工作中处处为难他，让他知道你的厉害。</button>
+              <button class="choice-btn" onclick="mirrorChoice(0, 10)">放下个人恩怨，公事公办。好好合作完成项目才是正事。</button>
+              <button class="choice-btn" onclick="mirrorChoice(0, 2)">表面客气，暗中寻找其他合作伙伴，尽量少跟他打交道。</button>
+            </div>
+          </div>
+          <div class="mirror-scenario" id="mirror-scenario-1" style="display:none">
+            <div class="mirror-scenario-text">上司让你处理一件法律上说得通，但你知道在道德上有问题的事情。「公司就是这么做的」，他这样说。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="mirrorChoice(1, -5)">照做。领导的决定自有他的道理，自己不必多想。</button>
+              <button class="choice-btn" onclick="mirrorChoice(1, 10)">坦诚向上司说明你的顾虑，建议换一种做法。即使得罪人，也不能违背良知。</button>
+              <button class="choice-btn" onclick="mirrorChoice(1, 2)">先拖一拖，看看事态发展再说。</button>
+            </div>
+          </div>
+          <div class="mirror-scenario" id="mirror-scenario-2" style="display:none">
+            <div class="mirror-scenario-text">你在路上捡到一个钱包，里面有大量现金，但没有身份证件。四周无人。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="mirrorChoice(2, -5)">天降横财，也许这就是运气。先收起来再说。</button>
+              <button class="choice-btn" onclick="mirrorChoice(2, 10)">交给附近的派出所。不是自己的东西，不能要——这一点良知清清楚楚。</button>
+              <button class="choice-btn" onclick="mirrorChoice(2, 3)">看看钱包里有没有联系方式，试着联系失主。如果联系不上再交派出所。</button>
+            </div>
+          </div>
+          <div class="mirror-scenario" id="mirror-scenario-3" style="display:none">
+            <div class="mirror-scenario-text">深夜，你在回家路上看到一个人倒在地上，似乎受伤了。帮你需要耗费时间和精力，甚至可能惹上麻烦。</div>
+            <div class="choice-options">
+              <button class="choice-btn" onclick="mirrorChoice(3, -5)">快步走过。万一是碰瓷呢？不要给自己惹麻烦。</button>
+              <button class="choice-btn" onclick="mirrorChoice(3, 10)">上前查看情况，拨打急救电话，留在旁边等待。良知告诉你，不能视而不见。</button>
+              <button class="choice-btn" onclick="mirrorChoice(3, 3)">远远地拨打急救电话，不靠近。既帮了人，也保护了自己。</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+
+    case 'ending':
+      return `<div class="interactive-container" id="ending-container" style="animation-delay: 0s; text-align: left; border: none; background: transparent; padding: 0;">
+        <div class="ending-scene" id="ending-scene"></div>
+      </div>`;
+
+    default:
+      return '';
+  }
+}
+
+function renderNav(chapterId) {
+  const prevBtn = chapterId > 1
+    ? `<button class="nav-btn" onclick="navigateToChapter(${chapterId - 2})">← 上一章</button>`
+    : '<div></div>';
+  const nextBtn = chapterId < chapters.length
+    ? `<button class="nav-btn" onclick="navigateToChapter(${chapterId})">下一章 →</button>`
+    : '<div></div>';
+  return `<div class="chapter-nav">
+    ${prevBtn}
+    <span class="chapter-indicator">${chapterId} / ${chapters.length}</span>
+    ${nextBtn}
+  </div>`;
+}
+
+// ========== CHOICES ==========
+function makeChoice(btn, recordId, alignment) {
+  const container = btn.closest('.choice-options');
+  if (container.dataset.answered) return;
+  container.dataset.answered = 'true';
+
+  state.mindScore += alignment;
+  state.choices.push({ record: recordId, alignment: alignment, text: btn.textContent });
+
+  btn.classList.add('selected');
+  container.querySelectorAll('.choice-btn').forEach(b => {
+    if (b !== btn) b.style.opacity = '0.4';
+    b.style.pointerEvents = 'none';
+  });
+
+  // Mark choice block as answered
+  const choiceBlock = btn.closest('.choice-block');
+  if (choiceBlock) choiceBlock.classList.add('answered');
+
+  const chapter = chapters[state.currentChapter];
+  const scene = chapter.scenes.find(s => s.type === 'choice' && s.record === recordId);
+  const opt = scene.options.find(o => o.text === btn.textContent);
+  if (opt && opt.feedback) {
+    const fb = document.getElementById(`feedback-${recordId}`);
+    fb.textContent = opt.feedback;
+    fb.classList.add('show');
+  }
+}
+
+function triggerClick(el, revealText) {
+  el.textContent = revealText;
+  el.style.color = 'var(--text-primary)';
+  el.style.cursor = 'default';
+  el.classList.add('emphasis');
+}
+
+function triggerClickHint(wrapper, revealText) {
+  const finger = wrapper.querySelector('.hint-finger');
+  const textEl = wrapper.querySelector('.narrative-text');
+  if (finger) finger.style.display = 'none';
+  if (textEl) {
+    textEl.textContent = revealText;
+    textEl.style.color = 'var(--text-primary)';
+    textEl.style.cursor = 'default';
+    textEl.classList.add('emphasis');
+  }
+  // Remove the ::after hint by adding a class
+  wrapper.classList.add('triggered');
+  // Remove wrapper's own after via inline style override
+  wrapper.style.setProperty('--after-display', 'none');
+}
+
+// ========== INTERACTIVE: BAMBOO ==========
+let bambooTimer, bambooTimeLeft = 60, bambooInterval;
+
+function initBamboo() {
+  bambooTimeLeft = 60;
+  if (bambooInterval) clearInterval(bambooInterval);
+  const timerEl = document.getElementById('bamboo-timer');
+  if (timerEl) {
+    timerEl.textContent = '60';
+    timerEl.classList.remove('danger');
+  }
+  const statusEl = document.getElementById('bamboo-status');
+  if (statusEl) statusEl.textContent = '第一天，竹子是竹子，我还是我。';
+  const scene = document.getElementById('bamboo-scene');
+  if (scene) {
+    scene.style.filter = 'none';
+    scene.style.opacity = '1';
+    scene.style.transform = 'none';
+    scene.style.pointerEvents = 'auto';
+    // Remove old floating words
+    scene.querySelectorAll('.bamboo-word').forEach(w => w.remove());
+  }
+}
+
+function startBamboo() {
+  bambooInterval = setInterval(() => {
+    bambooTimeLeft--;
+    const timer = document.getElementById('bamboo-timer');
+    timer.textContent = bambooTimeLeft;
+    if (bambooTimeLeft <= 20) timer.classList.add('danger');
+
+    const scene = document.getElementById('bamboo-scene');
+    const status = document.getElementById('bamboo-status');
+
+    if (bambooTimeLeft <= 45 && bambooTimeLeft > 30) {
+      scene.style.filter = 'blur(1px)';
+      status.textContent = '第三天，我开始有些烦躁。';
+    } else if (bambooTimeLeft <= 30 && bambooTimeLeft > 15) {
+      scene.style.filter = 'blur(2px)';
+      scene.style.transform = `rotate(${Math.sin(Date.now()/500) * 2}deg)`;
+      status.textContent = '第五天……第六天……竹子的道理到底在哪里？';
+    } else if (bambooTimeLeft <= 15 && bambooTimeLeft > 0) {
+      scene.style.filter = 'blur(3px)';
+      scene.style.opacity = 0.5;
+      status.textContent = '头越来越重，眼前越来越暗……';
+    } else if (bambooTimeLeft <= 0) {
+      clearInterval(bambooInterval);
+      scene.style.filter = 'blur(5px)';
+      scene.style.opacity = 0.2;
+      scene.style.pointerEvents = 'none';
+      status.innerHTML = '<span style="color: var(--accent); font-weight: 700;">第七天，我病倒了。<br>竹子的道理，不在竹子里。</span>';
+    }
+  }, 1000);
+}
+
+function clickBamboo(event) {
+  if (bambooTimeLeft <= 0) return;
+  const words = ['竹节', '青色', '中空', '叶子', '根须', '纹路', '气味', '露水', '光影', '风声', '……', '还是竹子', '没有道理'];
+  const word = words[Math.floor(Math.random() * words.length)];
+  const rect = event.currentTarget.getBoundingClientRect();
+  const el = document.createElement('span');
+  el.className = 'bamboo-word';
+  el.textContent = word;
+  el.style.left = (event.clientX - rect.left - 20) + 'px';
+  el.style.top = (event.clientY - rect.top - 10) + 'px';
+  event.currentTarget.appendChild(el);
+  setTimeout(() => el.remove(), 2000);
+}
+
+// ========== INTERACTIVE: LONGCHANG ==========
+let breathCount = 0, breathTimer;
+
+function startBreathing() {
+  document.getElementById('breath-start-btn').style.display = 'none';
+  breathCount = 0;
+  doBreathCycle();
+}
+
+function doBreathCycle() {
+  const circle = document.getElementById('breath-circle');
+  const text = document.getElementById('breath-text');
+
+  if (breathCount >= 3) {
+    // Enlightenment
+    circle.style.display = 'none';
+    text.style.display = 'none';
+    setTimeout(triggerEnlightenment, 500);
+    return;
+  }
+
+  text.textContent = `吸气……（第 ${breathCount + 1}/3 次）`;
+  circle.className = 'breath-circle inhale';
+
+  setTimeout(() => {
+    text.textContent = '呼气……';
+    circle.className = 'breath-circle exhale';
+    setTimeout(() => {
+      breathCount++;
+      doBreathCycle();
+    }, 4000);
+  }, 4000);
+}
+
+function triggerEnlightenment() {
+  const flash = document.getElementById('enlightenment-flash');
+  flash.classList.add('active');
+
+  const container = document.getElementById('longchang-container');
+  const scene = document.getElementById('longchang-scene');
+  scene.style.background = 'rgba(255,255,255,0.1)';
+
+  setTimeout(() => {
+    scene.innerHTML = `
+      <div class="enlightenment-text show">圣人之道，吾性自足，</div>
+      <div class="enlightenment-text show" style="animation-delay: 1s;">向之求理于事物者误也！</div>
+    `;
+    scene.style.background = 'transparent';
+  }, 1500);
+
+  setTimeout(() => {
+    flash.classList.remove('active');
+  }, 3000);
+}
+
+// ========== INTERACTIVE: BATTLE ==========
+const battleResults = [
+  [
+    { text: '你选择了直接进攻。实际上，王阳明伪造了兵部紧急公文，声称四路大军已围攻南昌。宁王收到消息，惊疑不定，犹豫了十多天——正是这关键的犹豫，错失了最佳战机。知行合一不是鲁莽出击，而是知道什么策略最有效，就毫不犹豫地执行。', correct: false },
+    { text: '正是如此！王阳明伪造兵部紧急公文，声称四路大军已围攻南昌。宁王收到消息，惊疑不定，犹豫了十多天——正是这关键的犹豫，为后续的平叛赢得了宝贵时间。这不是诡诈，是「知道该怎么做就怎么做」的知行合一。', correct: true },
+    { text: '按兵不动意味着坐等宁王顺江而下，届时天下大乱。王阳明深知这一点，没有等待朝廷旨意，果断采取了行动——这正是「知而不行只是未知」的最好注脚。', correct: false }
+  ],
+  [
+    { text: '坚守南昌虽然稳妥，但给了宁王喘息的时间。实际上，王阳明佯攻南昌，引宁王回救，然后在鄱阳湖设伏，以小博大。', correct: false },
+    { text: '正是如此！王阳明在鄱阳湖设伏，以小博大。宁王大军虽有数量优势，但被地形和战术所限，最终陷入被动。', correct: true },
+    { text: '退守意味着放弃已占领的南昌，同时也给了宁王喘息的机会。王阳明选择了主动出击，在鄱阳湖设伏迎敌。', correct: false }
+  ],
+  [
+    { text: '正面冲击对兵力不足的一方来说是赌博。王阳明选择了更智慧的火攻之策。', correct: false },
+    { text: '正是如此！王阳明命人驾驶小船，满载柴草，冲入宁王船阵，纵火焚烧。风助火势，宁王大船连樯顷刻化为灰烬。三十五天，叛乱平定。', correct: true },
+    { text: '宁王已起兵叛乱，劝降为时已晚。王阳明以火攻破敌，三十五天平定叛乱。', correct: false }
+  ]
+];
+let battlePhase = 0, battleScore = 0;
+
+function battleChoice(phase, choice) {
+  const phaseEl = document.getElementById(`battle-phase-${phase}`);
+  const resultEl = document.getElementById(`battle-result-${phase}`);
+  const buttons = phaseEl.querySelectorAll('.choice-btn');
+
+  buttons.forEach(b => { b.style.pointerEvents = 'none'; });
+  buttons[choice].classList.add('selected');
+  buttons.forEach((b, i) => { if (i !== choice) b.style.opacity = '0.4'; });
+
+  const result = battleResults[phase][choice];
+  if (result.correct) battleScore++;
+  resultEl.textContent = result.text;
+  resultEl.classList.add('show');
+
+  if (phase < 2) {
+    setTimeout(() => {
+      document.getElementById(`battle-phase-${phase + 1}`).classList.add('active');
+      document.getElementById(`battle-phase-${phase + 1}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 1500);
+  } else {
+    state.mindScore += battleScore * 3;
+    state.choices.push({ record: '平宁王', alignment: battleScore * 3, text: `战术决策正确 ${battleScore}/3` });
+  }
+}
+
+// ========== INTERACTIVE: MIRROR ==========
+let mirrorPhase = 0, mirrorScore = 0;
+
+function mirrorChoice(phase, alignment) {
+  const scenarioEl = document.getElementById(`mirror-scenario-${phase}`);
+  const buttons = scenarioEl.querySelectorAll('.choice-btn');
+  buttons.forEach(b => { b.style.pointerEvents = 'none'; });
+
+  // Find and highlight selected button
+  buttons.forEach(b => {
+    const onclickVal = b.getAttribute('onclick') || '';
+    if (onclickVal.indexOf('mirrorChoice(' + phase + ', ' + alignment + ')') !== -1) {
+      b.classList.add('selected');
+    } else {
+      b.style.opacity = '0.4';
+    }
+  });
+
+  if (alignment >= 5) mirrorScore++;
+
+  // Update mirror visual
+  const clearEl = document.getElementById(`mirror-clear-${phase}`);
+  const dotEl = document.getElementById(`md-${phase}`);
+  if (alignment >= 5) {
+    clearEl.classList.add('revealed');
+    dotEl.classList.add('done');
+  } else {
+    clearEl.style.background = 'radial-gradient(circle, rgba(100,100,100,0.3), rgba(60,60,60,0.5))';
+    clearEl.style.opacity = '0.6';
+    dotEl.style.background = '#666';
+    dotEl.style.borderColor = '#666';
+  }
+
+  if (phase < 3) {
+    setTimeout(() => {
+      document.getElementById(`mirror-scenario-${phase + 1}`).style.display = 'block';
+      document.getElementById(`mirror-scenario-${phase + 1}`).scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 1000);
+  } else {
+    // Show final mirror state
+    setTimeout(() => {
+      const fog = document.getElementById('mirror-fog');
+      const reflection = document.getElementById('mirror-reflection');
+      fog.style.opacity = 1 - (mirrorScore * 0.2);
+      if (mirrorScore >= 3) {
+        reflection.classList.add('show');
+      }
+      state.mindScore += mirrorScore * 2;
+      state.choices.push({ record: '致良知明镜', alignment: mirrorScore * 2, text: `良知明澈 ${mirrorScore}/4` });
+
+      const container = document.getElementById('mirror-container-inner');
+      const summary = document.createElement('div');
+      summary.style.cssText = 'margin-top: 1.5rem; text-align: center; font-size: 0.9rem; color: var(--text-secondary); line-height: 1.8;';
+      if (mirrorScore === 4) {
+        summary.innerHTML = '你的镜子四角皆明。良知不是从外面学来的道理，是你本心自有的光明。<br><span style="color: var(--accent)">"良知在人，随你如何不能泯灭。"</span>';
+      } else if (mirrorScore >= 2) {
+        summary.innerHTML = `你的镜子明亮了 ${mirrorScore} 角。有些遮蔽已被擦去，有些还在。<br><span style="color: var(--accent)">"太阳被云遮住了，太阳没有消失。良知被私欲遮蔽了，良知也没有消失。"</span>`;
+      } else {
+        summary.innerHTML = '镜子上的雾还很浓。但这恰恰说明——<br><span style="color: var(--accent)">致良知，不是去外面找什么，是把遮蔽去掉。</span>';
+      }
+      container.parentNode.insertBefore(summary, container.nextSibling);
+    }, 1000);
+  }
+}
+
+// ========== INTERACTIVE: ENDING ==========
+function initEnding() {
+  const scene = document.getElementById('ending-scene');
+  const score = Math.min(100, Math.max(0, state.mindScore));
+
+  let endingTitle, endingText;
+  if (score >= 80) {
+    endingTitle = '光明圆满';
+    endingText = `<p>你走过了王阳明五十七年的心学之路，在每一个关键节点，你的选择都与良知相合。</p>
+      <p>从少年立志到龙场悟道，从知行合一到致良知，你真切地感受到了——理不在外物之中，就在此心之内。</p>
+      <p>四句教已不再是书本上的文字，而是你亲身印证过的路径：<br><span style="color: var(--accent)">无善无恶心之体，有善有恶意之动。<br>知善知恶是良知，为善去恶是格物。</span></p>
+      <p>万物一体，不是道理上的认同，是此心真正的感受。</p>`;
+  } else if (score >= 60) {
+    endingTitle = '知行渐近';
+    endingText = `<p>你在这条路上走得不完美，但方向是对的。</p>
+      <p>有些选择你犹豫过，有些时刻你没有完全跟随良知的指引——但这恰恰是「事上磨练」的意义。没有人在开始时就做到完美。</p>
+      <p>王阳明自己也曾格竹失败，也曾廷杖之后心生恐惧。但每一次跌倒，都是良知的磨砺。</p>
+      <p><span style="color: var(--accent)">"每在事上磨一次，良知就更纯一分，私欲就更薄一分。"</span></p>`;
+  } else if (score >= 40) {
+    endingTitle = '迷途知返';
+    endingText = `<p>此心有蔽，然良知未泯。</p>
+      <p>在许多关键时刻，你选择了更「安全」或更「现实」的路径。这很正常——现实世界总是充满了诱惑和压力。</p>
+      <p>但回想龙场那个夜晚：王阳明在石棺中，在极致的困顿和孤独中，终于找到了答案——</p>
+      <p><span style="color: var(--accent)">"圣人之道，吾性自足。"</span></p>
+      <p>良知一直都在你心里。它从未消失，只是被遮住了。</p>`;
+  } else {
+    endingTitle = '省思之心';
+    endingText = `<p>此心犹暗，但这正是起点。</p>
+      <p>王阳明二十岁时也曾坐在竹子面前，七天后一无所获。朱子的「即物穷理」走不通——不是因为你不够努力，而是方向错了。</p>
+      <p>向外求理，永远求不到。真正的道理，在你自己心里。</p>
+      <p><span style="color: var(--accent)">不妨回到格竹的那个下午，重新开始。这一次，不要看竹子，看自己的心。</span></p>`;
+  }
+
+  let reviewHtml = '';
+  state.choices.forEach(c => {
+    const optClass = c.alignment >= 5 ? 'color: var(--accent)' : c.alignment <= -3 ? 'color: var(--text-muted)' : '';
+    reviewHtml += `<div class="review-item">
+      <span class="review-chapter">${c.record}</span>
+      <span class="review-choice" style="${optClass}">${c.text}</span>
+    </div>`;
+  });
+
+  scene.innerHTML = `
+    <div class="ending-review">
+      <h3 style="font-family: var(--font-title); font-size: 1.3rem; color: var(--accent); margin-bottom: 1.5rem; letter-spacing: 0.1em;">人生回顾</h3>
+      ${reviewHtml}
+    </div>
+    <div class="ending-score">
+      <div class="score-label">心之明度</div>
+      <div class="score-value">${score}</div>
+      <div class="score-name">${endingTitle}</div>
+    </div>
+    <div class="ending-text">${endingText}</div>
+    <div class="final-quote">此心光明，亦复何言。</div>
+    <button class="btn btn-primary restart-btn" onclick="restartGame()">重新体验</button>
+  `;
+}
+
+function restartGame() {
+  state.currentChapter = -1;
+  state.mindScore = 50;
+  state.choices = [];
+  state.interactiveStates = {};
+  state.visitedChapters.clear();
+  navigateToChapter(0);
+}
+
+// ========== INIT INTERACTIVE ==========
+function initInteractive(chapter) {
+  chapter.scenes.forEach(scene => {
+    if (scene.type === 'interactive') {
+      switch (scene.id) {
+        case 'bamboo': initBamboo(); startBamboo(); break;
+        case 'longchang': /* wait for user click */ break;
+        case 'battle':
+          battlePhase = 0; battleScore = 0;
+          break;
+        case 'mirror':
+          mirrorPhase = 0; mirrorScore = 0;
+          break;
+        case 'ending': initEnding(); break;
+      }
+    }
+  });
+}
+
+// ========== PROGRESS ==========
+function updateProgress() {
+  const pct = ((state.currentChapter + 1) / chapters.length) * 100;
+  document.getElementById('progress-bar').style.width = pct + '%';
+}
+
+// ========== TIMELINE ==========
+function buildTimeline() {
+  const panel = document.getElementById('timeline-panel');
+  let html = '';
+  chapters.forEach((ch, i) => {
+    html += `<div class="timeline-item" id="tl-${i}" onclick="navigateToChapter(${i}); toggleTimeline();">
+      <div class="timeline-dot"></div>
+      <div class="timeline-label">
+        <div class="tl-title">第${ch.id}章 · ${ch.title}</div>
+        <div class="tl-year">${ch.era}</div>
+      </div>
+    </div>`;
+  });
+  panel.innerHTML = html;
+}
+
+function updateTimeline() {
+  chapters.forEach((_, i) => {
+    const el = document.getElementById(`tl-${i}`);
+    el.className = 'timeline-item';
+    if (i === state.currentChapter) el.classList.add('current');
+    else if (state.visitedChapters.has(i)) el.classList.add('visited');
+  });
+}
+
+function toggleTimeline() {
+  document.getElementById('timeline-panel').classList.toggle('open');
+}
+
+// ========== CHAPTER SVG ILLUSTRATIONS ==========
+function getChapterIllustration(id) {
+  const a = 'var(--accent)';
+  const m = 'var(--text-muted)';
+  const p = 'var(--text-primary)';
+  const g = 'var(--accent-gold)';
+  // Ink-wash palette
+  const inkDk = '#3a3530';
+  const inkMd = '#6b6058';
+  const inkLt = '#9a8e80';
+  const wash = '#c8bfb0';
+  const skin = '#e2cdb5';
+  const hair = '#2c2416';
+  const robe1 = '#5a4838';
+  const robe2 = '#7a6650';
+  const robe3 = '#4a3a2c';
+  const white = '#f0ebe0';
+  const gold = '#c4a24a';
+  const red = '#b33a2a';
+  const bgDark = '#141218';
+
+  const svgs = {
+    // ===== Chapter 1: 降生余姚 — 祖父竹轩公为婴儿取名"守仁" =====
+    1: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="glow1" cx="340" cy="200" r="180" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${gold}" stop-opacity="0.12"/>
+          <stop offset="100%" stop-color="${gold}" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <rect width="680" height="300" rx="8" fill="url(#glow1)"/>
+      <!-- 水墨山 — 余姚山水 -->
+      <path d="M0,240 Q80,180 160,210 Q220,190 300,220 Q380,170 460,200 Q540,160 620,195 Q660,185 680,200 L680,300 L0,300Z" fill="${inkMd}" opacity="0.15"/>
+      <path d="M0,260 Q120,230 250,250 Q400,220 550,245 Q630,235 680,250 L680,300 L0,300Z" fill="${inkMd}" opacity="0.1"/>
+      <!-- 远景淡墨山 -->
+      <path d="M200,180 Q280,140 360,170 Q400,155 440,165" fill="none" stroke="${inkLt}" stroke-width="2" opacity="0.12"/>
+      <!-- 老宅庭院 -->
+      <rect x="80" y="195" width="130" height="105" fill="none" stroke="${inkLt}" stroke-width="1" opacity="0.15" rx="2"/>
+      <path d="M75,195 L145,165 L215,195" fill="none" stroke="${inkLt}" stroke-width="1" opacity="0.12"/>
+      <!-- 竹轩公（祖父王天叙）— 白发长须，儒雅长者 -->
+      <g transform="translate(200, 140)">
+        <!-- 头 -->
+        <ellipse cx="0" cy="22" rx="18" ry="22" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 白发高髻 -->
+        <ellipse cx="0" cy="4" rx="14" ry="10" fill="#b0a898" stroke="${inkMd}" stroke-width="0.6"/>
+        <path d="M-8,0 Q-12,-8 -5,-12 Q0,-14 5,-12 Q12,-8 8,0" fill="#c8c0b0"/>
+        <!-- 眉眼 — 慈祥 -->
+        <path d="M-9,18 Q-6,15 -3,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-6" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M3,18 Q6,15 9,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="6" cy="21" r="1.2" fill="${inkDk}"/>
+        <!-- 鼻 -->
+        <path d="M0,24 L-1,30" fill="none" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 长须飘然 -->
+        <path d="M-12,32 Q-15,45 -10,55 Q-5,60 0,55" fill="none" stroke="#b0a898" stroke-width="1.2" opacity="0.7"/>
+        <path d="M0,32 Q-2,48 0,58 Q3,62 5,55" fill="none" stroke="#b0a898" stroke-width="1" opacity="0.6"/>
+        <path d="M12,32 Q15,45 10,55 Q5,60 0,55" fill="none" stroke="#b0a898" stroke-width="1.2" opacity="0.7"/>
+        <!-- 身体 — 长袍 -->
+        <path d="M-22,44 Q-26,80 -28,120 L28,120 Q26,80 22,44Z" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 交领 -->
+        <path d="M-10,44 L0,60 L10,44" fill="none" stroke="${inkMd}" stroke-width="1"/>
+        <!-- 双手托婴儿 -->
+        <path d="M-18,75 Q-28,85 -20,95" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M18,75 Q28,85 20,95" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <ellipse cx="0" cy="95" rx="22" ry="10" fill="${white}" stroke="${inkLt}" stroke-width="0.5" opacity="0.5"/>
+      </g>
+      <!-- 婴儿王阳明 — 安静不语 -->
+      <g transform="translate(200, 90)">
+        <circle cx="0" cy="0" r="14" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 胎发 -->
+        <path d="M-8,-8 Q-4,-13 0,-12 Q4,-13 8,-8" fill="${hair}" stroke="none"/>
+        <!-- 闭眼 — 五年不语 -->
+        <path d="M-5,-1 Q-3,-3 -1,-1" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+        <path d="M1,-1 Q3,-3 5,-1" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+        <!-- 小嘴紧闭 -->
+        <path d="M-2,4 L2,4" fill="none" stroke="${inkMd}" stroke-width="0.6"/>
+        <!-- 襁褓 -->
+        <ellipse cx="0" cy="18" rx="16" ry="12" fill="${white}" stroke="${inkLt}" stroke-width="0.5" opacity="0.6"/>
+      </g>
+      <!-- 沉寂气泡 — 五年不语的象征 -->
+      <g opacity="0.15">
+        <circle cx="380" cy="100" r="35" fill="none" stroke="${inkLt}" stroke-width="0.8"/>
+        <circle cx="380" cy="100" r="25" fill="none" stroke="${inkLt}" stroke-width="0.6"/>
+        <circle cx="380" cy="100" r="15" fill="none" stroke="${inkLt}" stroke-width="0.4"/>
+        <circle cx="380" cy="100" r="5" fill="${inkLt}" opacity="0.3"/>
+      </g>
+      <!-- "守仁"二字浮现 -->
+      <text x="530" y="120" text-anchor="middle" font-size="52" fill="${gold}" opacity="0.12" font-family="var(--font-title)">守仁</text>
+      <text x="530" y="155" text-anchor="middle" font-size="13" fill="${inkLt}" opacity="0.25" font-family="serif">守，是守住；仁，是天理</text>
+      <!-- 装饰印 -->
+      <rect x="600" y="240" width="32" height="32" rx="3" fill="none" stroke="${red}" stroke-width="1.5" opacity="0.2" transform="rotate(-3,616,256)"/>
+      <text x="616" y="261" text-anchor="middle" font-size="11" fill="${red}" opacity="0.2" font-family="var(--font-title)">余姚</text>
+    </svg>`,
+
+    // ===== Chapter 2: 少年立志 — 金山寺吟诗，意气风发 =====
+    2: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 金山寺塔 — 远景 -->
+      <g opacity="0.2">
+        <rect x="85" y="140" width="40" height="130" fill="none" stroke="${inkLt}" stroke-width="1"/>
+        <path d="M75,140 L105,140 L100,125 L80,125Z" fill="none" stroke="${inkLt}" stroke-width="0.8"/>
+        <path d="M88,140 L88,125" stroke="${inkLt}" stroke-width="0.5"/>
+        <!-- 塔层 -->
+        <line x1="82" y1="160" x2="108" y2="160" stroke="${inkLt}" stroke-width="0.5"/>
+        <line x1="80" y1="180" x2="110" y2="180" stroke="${inkLt}" stroke-width="0.5"/>
+        <line x1="78" y1="200" x2="112" y2="200" stroke="${inkLt}" stroke-width="0.5"/>
+      </g>
+      <!-- 镇江金山 — 浮于江心 -->
+      <path d="M50,270 Q90,200 130,230 Q160,215 180,240 L180,300 L50,300Z" fill="${inkMd}" opacity="0.12"/>
+      <!-- 长江波纹 -->
+      <path d="M0,275 Q80,265 160,272 Q240,260 320,268 Q400,258 480,265 Q560,255 640,262 L680,268 L680,300 L0,300Z" fill="none" stroke="${inkLt}" stroke-width="0.8" opacity="0.15"/>
+      <path d="M0,285 Q100,278 200,282 Q300,275 400,280 Q500,273 600,278 L680,275 L680,300 L0,300Z" fill="none" stroke="${inkLt}" stroke-width="0.5" opacity="0.1"/>
+      <!-- 少年王阳明 — 十一岁，英姿勃发，仰天吟诗 -->
+      <g transform="translate(400, 80)">
+        <!-- 头 -->
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 少年发髻 — 巾帻 -->
+        <ellipse cx="0" cy="5" rx="16" ry="11" fill="${hair}"/>
+        <path d="M-16,5 Q-18,0 -12,-2 L12,-2 Q18,0 16,5" fill="${hair}"/>
+        <rect x="-16" y="3" width="32" height="4" rx="1" fill="${robe1}" opacity="0.6"/>
+        <!-- 眉眼 — 英气勃勃 -->
+        <path d="M-8,16 Q-5,13 -2,16" fill="none" stroke="${inkDk}" stroke-width="1.2"/>
+        <circle cx="-5" cy="19" r="1.3" fill="${inkDk}"/>
+        <path d="M2,16 Q5,13 8,16" fill="none" stroke="${inkDk}" stroke-width="1.2"/>
+        <circle cx="5" cy="19" r="1.3" fill="${inkDk}"/>
+        <!-- 唇微启 — 吟诗 -->
+        <ellipse cx="0" cy="27" rx="3" ry="1.5" fill="#c49080" opacity="0.5"/>
+        <!-- 身体 — 少年文人长衫 -->
+        <path d="M-20,42 Q-22,75 -24,115 L24,115 Q22,75 20,42Z" fill="${white}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 腰带束带 -->
+        <rect x="-22" y="78" width="44" height="4" rx="1" fill="${gold}" opacity="0.5"/>
+        <!-- 衣纹 -->
+        <path d="M-10,50 Q-8,70 -10,90" fill="none" stroke="${inkLt}" stroke-width="0.5" opacity="0.4"/>
+        <path d="M10,50 Q12,70 10,90" fill="none" stroke="${inkLt}" stroke-width="0.5" opacity="0.4"/>
+        <!-- 左手负后，右手吟诗前伸 -->
+        <path d="M-20,55 Q-30,65 -25,80" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M20,55 Q40,45 55,35" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <!-- 手指 -->
+        <path d="M55,35 L60,30" stroke="${skin}" stroke-width="2" stroke-linecap="round"/>
+        <!-- 腿 -->
+        <rect x="-16" y="115" width="12" height="40" rx="3" fill="${inkDk}" opacity="0.8"/>
+        <rect x="4" y="115" width="12" height="40" rx="3" fill="${inkDk}" opacity="0.8"/>
+        <!-- 靴 -->
+        <rect x="-18" y="152" width="15" height="5" rx="2" fill="${robe1}"/>
+        <rect x="3" y="152" width="15" height="5" rx="2" fill="${robe1}"/>
+      </g>
+      <!-- 诗句从少年身旁飘出 -->
+      <g opacity="0.25">
+        <text x="240" y="90" font-size="15" fill="${gold}" font-family="var(--font-title)">金山一点大如拳</text>
+        <text x="250" y="115" font-size="15" fill="${gold}" font-family="var(--font-title)">打破维扬水底天</text>
+        <text x="260" y="140" font-size="15" fill="${gold}" font-family="var(--font-title)">醉倚妙高台上月</text>
+        <text x="270" y="165" font-size="15" fill="${gold}" font-family="var(--font-title)">玉箫吹彻洞龙眠</text>
+      </g>
+      <!-- 月 — 妙高台上月 -->
+      <g transform="translate(580, 55)">
+        <circle cx="0" cy="0" r="22" fill="${gold}" opacity="0.08"/>
+        <circle cx="0" cy="0" r="18" fill="${gold}" opacity="0.1"/>
+        <circle cx="6" cy="-4" r="16" fill="${bgDark}"/>
+      </g>
+      <!-- "做圣贤"少年之志 -->
+      <text x="580" y="120" text-anchor="middle" font-size="18" fill="${red}" opacity="0.2" font-family="var(--font-title)">第一等事</text>
+      <text x="580" y="142" text-anchor="middle" font-size="13" fill="${inkLt}" opacity="0.25" font-family="serif">是做圣贤</text>
+    </svg>`,
+
+    // ===== Chapter 3: 格竹七日 — 二十一岁对竹枯坐，面容憔悴 =====
+    3: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 竹林前景 — 多竿翠竹 -->
+      <g opacity="0.6">
+        <!-- 主竹 -->
+        <line x1="160" y1="290" x2="155" y2="30" stroke="#4a7c2e" stroke-width="7"/>
+        <line x1="165" y1="290" x2="168" y2="50" stroke="#3d6b24" stroke-width="5"/>
+        <!-- 竹节 -->
+        <line x1="152" y1="80" x2="168" y2="80" stroke="#2d5016" stroke-width="2.5"/>
+        <line x1="153" y1="130" x2="167" y2="130" stroke="#2d5016" stroke-width="2.5"/>
+        <line x1="155" y1="180" x2="165" y2="180" stroke="#2d5016" stroke-width="2.5"/>
+        <line x1="156" y1="230" x2="164" y2="230" stroke="#2d5016" stroke-width="2.5"/>
+        <!-- 竹叶 -->
+        <path d="M155,75 Q130,60 115,68" fill="none" stroke="#4a7c2e" stroke-width="2.5" stroke-linecap="round"/>
+        <path d="M155,70 Q125,55 110,60" fill="none" stroke="#4a7c2e" stroke-width="2" stroke-linecap="round"/>
+        <path d="M165,125 Q190,112 205,118" fill="none" stroke="#4a7c2e" stroke-width="2" stroke-linecap="round"/>
+        <path d="M155,128 Q130,118 118,122" fill="none" stroke="#4a7c2e" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M160,175 Q185,165 198,170" fill="none" stroke="#4a7c2e" stroke-width="2" stroke-linecap="round"/>
+        <!-- 副竹 -->
+        <line x1="100" y1="290" x2="95" y2="80" stroke="#3d6b24" stroke-width="5" opacity="0.7"/>
+        <line x1="105" y1="290" x2="108" y2="100" stroke="#4a7c2e" stroke-width="4" opacity="0.6"/>
+        <path d="M95,110 Q70,98 58,105" fill="none" stroke="#4a7c2e" stroke-width="1.8" stroke-linecap="round" opacity="0.6"/>
+        <path d="M100,160 Q75,148 62,155" fill="none" stroke="#4a7c2e" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+      </g>
+      <!-- 王阳明 — 二十一岁，枯坐格竹，面容渐渐憔悴 -->
+      <g transform="translate(420, 115)">
+        <!-- 头 -->
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 发髻（微微散乱 — 七日未整） -->
+        <ellipse cx="0" cy="6" rx="13" ry="10" fill="${hair}"/>
+        <path d="M-6,-2 Q-8,-8 -3,-10" fill="none" stroke="${hair}" stroke-width="2" opacity="0.5"/>
+        <!-- 眉 — 紧锁 -->
+        <path d="M-8,16 Q-5,14 -2,16" fill="none" stroke="${inkDk}" stroke-width="1.3"/>
+        <circle cx="-5" cy="19" r="1.2" fill="${inkDk}"/>
+        <path d="M2,16 Q5,14 8,16" fill="none" stroke="${inkDk}" stroke-width="1.3"/>
+        <circle cx="5" cy="19" r="1.2" fill="${inkDk}"/>
+        <!-- 疲惫的眼下 -->
+        <path d="M-8,22 Q-5,23 -2,22" fill="none" stroke="${inkLt}" stroke-width="0.6" opacity="0.5"/>
+        <path d="M2,22 Q5,23 8,22" fill="none" stroke="${inkLt}" stroke-width="0.6" opacity="0.5"/>
+        <!-- 唇紧抿 -->
+        <line x1="-3" y1="27" x2="3" y2="27" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 身体 — 文人长衫，盘坐 -->
+        <ellipse cx="0" cy="60" rx="28" ry="22" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 交领 -->
+        <path d="M-8,42 L0,56 L8,42" fill="none" stroke="${inkMd}" stroke-width="1"/>
+        <!-- 手指竹子方向 — 执着 -->
+        <path d="M-28,52 Q-60,42 -90,50" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <!-- 另一手托腮 -->
+        <path d="M20,48 Q28,42 25,35" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <!-- 盘腿 -->
+        <path d="M-18,78 Q-28,88 -22,96" fill="none" stroke="${inkDk}" stroke-width="3"/>
+        <path d="M18,78 Q28,88 22,96" fill="none" stroke="${inkDk}" stroke-width="3"/>
+        <!-- 坐垫 -->
+        <ellipse cx="0" cy="98" rx="32" ry="8" fill="${robe1}" opacity="0.4"/>
+      </g>
+      <!-- 虚线从手指到竹子 — "格"的动作 -->
+      <path d="M330,165 Q280,155 200,170" fill="none" stroke="${inkLt}" stroke-width="1" opacity="0.2" stroke-dasharray="4,6"/>
+      <!-- 浮动的"格"字碎片 -->
+      <g opacity="0.12" font-family="var(--font-title)" fill="${inkLt}">
+        <text x="300" y="80" font-size="14">理？</text>
+        <text x="340" y="65" font-size="11">节</text>
+        <text x="280" y="100" font-size="12">中空</text>
+        <text x="360" y="90" font-size="10">……</text>
+        <text x="310" y="115" font-size="11">色</text>
+        <text x="370" y="110" font-size="10">没有道理</text>
+      </g>
+      <!-- 七日文字 -->
+      <text x="520" y="80" font-size="40" fill="${red}" opacity="0.1" font-family="var(--font-title)">七日</text>
+      <text x="520" y="120" text-anchor="middle" font-size="12" fill="${inkLt}" opacity="0.2" font-family="serif">竹子的道理</text>
+      <text x="520" y="138" text-anchor="middle" font-size="12" fill="${inkLt}" opacity="0.2" font-family="serif">不在竹子里</text>
+    </svg>`,
+
+    // ===== Chapter 4: 上疏与廷杖 — 直言被杖，贬谪龙场 =====
+    4: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 朝堂柱子 — 压迫感 -->
+      <rect x="100" y="40" width="16" height="260" fill="${inkMd}" opacity="0.08"/>
+      <rect x="250" y="40" width="16" height="260" fill="${inkMd}" opacity="0.06"/>
+      <rect x="414" y="40" width="16" height="260" fill="${inkMd}" opacity="0.06"/>
+      <rect x="564" y="40" width="16" height="260" fill="${inkMd}" opacity="0.08"/>
+      <!-- 横梁 -->
+      <line x1="80" y1="50" x2="600" y2="50" stroke="${inkMd}" stroke-width="2" opacity="0.1"/>
+      <!-- 王阳明 — 趴伏受杖，衣衫凌乱 -->
+      <g transform="translate(340, 190)">
+        <!-- 身体俯卧 -->
+        <path d="M-35,0 L-30,-25 L30,-25 L35,0Z" fill="${white}" stroke="${inkMd}" stroke-width="0.8" opacity="0.7"/>
+        <!-- 臂 -->
+        <path d="M-35,-10 Q-45,-5 -42,10" fill="none" stroke="${skin}" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M35,-10 Q42,-5 40,10" fill="none" stroke="${skin}" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- 头（侧伏） -->
+        <g transform="translate(32, -25) rotate(15)">
+          <ellipse cx="0" cy="12" rx="15" ry="18" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+          <!-- 发髻散落 -->
+          <ellipse cx="0" cy="-4" rx="12" ry="9" fill="${hair}"/>
+          <path d="M5,-10 Q10,-15 8,-8" fill="none" stroke="${hair}" stroke-width="2" opacity="0.5"/>
+          <!-- 闭目咬牙 -->
+          <path d="M-6,8 Q-3,6 0,8" fill="none" stroke="${inkDk}" stroke-width="1"/>
+          <line x1="-4" y1="17" x2="0" y2="17" stroke="${inkMd}" stroke-width="0.8"/>
+        </g>
+        <!-- 腿 -->
+        <rect x="-25" y="0" width="14" height="30" rx="3" fill="${inkDk}" opacity="0.7"/>
+        <rect x="12" y="0" width="14" height="30" rx="3" fill="${inkDk}" opacity="0.7"/>
+      </g>
+      <!-- 廷杖 — 从上方落下 -->
+      <g opacity="0.5">
+        <line x1="440" y1="80" x2="400" y2="170" stroke="${robe3}" stroke-width="5" stroke-linecap="round"/>
+        <!-- 杖头 -->
+        <rect x="395" y="165" width="12" height="8" rx="2" fill="${robe3}"/>
+      </g>
+      <g opacity="0.35">
+        <line x1="460" y1="90" x2="420" y2="175" stroke="${robe3}" stroke-width="5" stroke-linecap="round"/>
+        <rect x="415" y="170" width="12" height="8" rx="2" fill="${robe3}"/>
+      </g>
+      <!-- 刘瑾权势象征 — 阴影笼罩 -->
+      <g opacity="0.1">
+        <text x="560" y="80" font-size="28" fill="${red}" font-family="var(--font-title)">权</text>
+        <text x="560" y="115" font-size="28" fill="${red}" font-family="var(--font-title)">奸</text>
+      </g>
+      <!-- 贬谪箭头 — 龙场方向 -->
+      <g opacity="0.2">
+        <path d="M200,240 Q150,255 100,260" fill="none" stroke="${gold}" stroke-width="1" stroke-dasharray="4,4"/>
+        <polygon points="100,260 110,255 110,265" fill="${gold}"/>
+        <text x="80" y="280" text-anchor="middle" font-size="11" fill="${gold}" font-family="serif">龙场驿</text>
+      </g>
+      <!-- "四十"廷杖 -->
+      <text x="140" y="150" font-size="42" fill="${red}" opacity="0.1" font-family="var(--font-title)">四十</text>
+      <text x="140" y="185" font-size="13" fill="${inkLt}" opacity="0.2" font-family="serif">廷杖</text>
+    </svg>`,
+
+    // ===== Chapter 5: 龙场悟道 — 石棺中打坐，悟道之光 =====
+    5: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="enlighten" cx="340" cy="150" r="120" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${gold}" stop-opacity="0.2"/>
+          <stop offset="60%" stop-color="${gold}" stop-opacity="0.05"/>
+          <stop offset="100%" stop-color="${gold}" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 瘴气弥漫 — 龙场苦寒 -->
+      <g opacity="0.08">
+        <circle cx="80" cy="80" r="40" fill="${inkLt}"/>
+        <circle cx="600" cy="60" r="35" fill="${inkLt}"/>
+        <circle cx="50" cy="220" r="30" fill="${inkLt}"/>
+        <circle cx="630" cy="240" r="35" fill="${inkLt}"/>
+      </g>
+      <!-- 群山 — 贵州十万大山 -->
+      <path d="M0,250 Q60,180 120,210 Q180,160 240,195 Q300,150 360,185 Q420,145 480,175 Q540,140 600,170 Q650,155 680,180 L680,300 L0,300Z" fill="${inkMd}" opacity="0.1"/>
+      <path d="M0,265 Q100,240 200,255 Q300,230 400,248 Q500,225 600,242 Q650,235 680,245 L680,300 L0,300Z" fill="${inkMd}" opacity="0.07"/>
+      <!-- 石棺 -->
+      <g transform="translate(340, 165)">
+        <!-- 外棺 -->
+        <rect x="-90" y="-50" width="180" height="100" rx="6" fill="none" stroke="${inkLt}" stroke-width="2.5" opacity="0.3"/>
+        <!-- 内棺 -->
+        <rect x="-80" y="-42" width="160" height="84" rx="4" fill="none" stroke="${inkLt}" stroke-width="1" opacity="0.2"/>
+        <!-- 王阳明 — 在石棺中打坐冥想 -->
+        <g transform="translate(0, 10)">
+          <!-- 头 -->
+          <circle cx="0" cy="-18" r="15" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+          <!-- 发髻（简朴，龙场生活） -->
+          <ellipse cx="0" cy="-30" rx="10" ry="7" fill="${hair}"/>
+          <!-- 闭目 — 深沉冥想 -->
+          <path d="M-5,-19 Q-3,-21 -1,-19" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+          <path d="M1,-19 Q3,-21 5,-19" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+          <!-- 盘坐身体 -->
+          <ellipse cx="0" cy="5" rx="22" ry="16" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+          <!-- 双手结印 -->
+          <ellipse cx="-8" cy="2" rx="5" ry="3" fill="${skin}" opacity="0.8"/>
+          <ellipse cx="8" cy="2" rx="5" ry="3" fill="${skin}" opacity="0.8"/>
+        </g>
+      </g>
+      <!-- 悟道之光 — 从石棺中迸发 -->
+      <circle cx="340" cy="110" r="10" fill="${gold}" opacity="0.3">
+        <animate attributeName="r" values="10;18;10" dur="2.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2.5s" repeatCount="indefinite"/>
+      </circle>
+      <!-- 光芒射线 -->
+      <g opacity="0.12" stroke="${gold}" stroke-width="0.8">
+        <line x1="340" y1="95" x2="300" y2="50"/>
+        <line x1="340" y1="95" x2="380" y2="50"/>
+        <line x1="340" y1="95" x2="340" y2="40"/>
+        <line x1="340" y1="95" x2="270" y2="70"/>
+        <line x1="340" y1="95" x2="410" y2="70"/>
+      </g>
+      <!-- 悟道文字 -->
+      <text x="340" y="45" text-anchor="middle" font-size="16" fill="${gold}" opacity="0.25" font-family="var(--font-title)">圣人之道，吾性自足</text>
+      <!-- 龙场驿标注 -->
+      <text x="80" y="280" font-size="10" fill="${inkLt}" opacity="0.2" font-family="serif">贵州龙场驿 · 万山丛中 · 瘴疠之地</text>
+    </svg>`,
+
+    // ===== Chapter 6: 知行合一 — 讲学场景，弟子围坐 =====
+    6: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 讲堂简陋背景 -->
+      <rect x="120" y="60" width="440" height="220" fill="none" stroke="${inkLt}" stroke-width="0.8" opacity="0.08" rx="4"/>
+      <!-- 王阳明 — 四十岁左右，美须髯初显，讲学神态 -->
+      <g transform="translate(340, 85)">
+        <!-- 头 -->
+        <ellipse cx="0" cy="24" rx="18" ry="22" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 方巾 -->
+        <rect x="-20" y="0" width="40" height="12" rx="3" fill="${inkDk}" opacity="0.6"/>
+        <path d="M-20,12 Q-18,6 0,4 Q18,6 20,12" fill="${inkDk}" opacity="0.4"/>
+        <!-- 眉目 — 清朗，目光如炬 -->
+        <path d="M-9,18 Q-6,15 -3,18" fill="none" stroke="${inkDk}" stroke-width="1.2"/>
+        <circle cx="-6" cy="21" r="1.5" fill="${inkDk}"/>
+        <path d="M3,18 Q6,15 9,18" fill="none" stroke="${inkDk}" stroke-width="1.2"/>
+        <circle cx="6" cy="21" r="1.5" fill="${inkDk}"/>
+        <!-- 须髯 — 美须髯，儒将风度 -->
+        <path d="M-8,32 Q-12,42 -8,48" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M0,33 Q-1,44 0,50" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M8,32 Q12,42 8,48" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <!-- 身体 — 学者长袍 -->
+        <path d="M-24,46 Q-26,80 -28,120 L28,120 Q26,80 24,46Z" fill="${white}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 交领 -->
+        <path d="M-10,46 L0,62 L10,46" fill="none" stroke="${inkMd}" stroke-width="1"/>
+        <!-- 腰带 -->
+        <rect x="-22" y="82" width="44" height="4" rx="1" fill="${gold}" opacity="0.4"/>
+        <!-- 右手手势 — 讲学指点 -->
+        <path d="M24,58 Q48,48 58,55" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <!-- 左手负后 -->
+        <path d="M-24,58 Q-32,68 -28,80" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <!-- 腿 -->
+        <rect x="-18" y="120" width="14" height="38" rx="3" fill="${inkDk}" opacity="0.7"/>
+        <rect x="4" y="120" width="14" height="38" rx="3" fill="${inkDk}" opacity="0.7"/>
+        <!-- 靴 -->
+        <rect x="-20" y="155" width="17" height="5" rx="2" fill="${robe1}"/>
+        <rect x="3" y="155" width="17" height="5" rx="2" fill="${robe1}"/>
+      </g>
+      <!-- 弟子们 — 虔心听讲 -->
+      <!-- 左侧弟子 -->
+      <g transform="translate(140, 195)" opacity="0.5">
+        <circle cx="0" cy="0" r="10" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="-9" rx="7" ry="5" fill="${hair}"/>
+        <path d="M-12,10 L-10,40 L10,40 L12,10Z" fill="${white}" stroke="${inkMd}" stroke-width="0.5"/>
+      </g>
+      <g transform="translate(190, 200)" opacity="0.45">
+        <circle cx="0" cy="0" r="9" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="-8" rx="7" ry="5" fill="${hair}"/>
+        <path d="M-11,9 L-9,38 L9,38 L11,9Z" fill="${robe2}" stroke="${inkMd}" stroke-width="0.5"/>
+      </g>
+      <g transform="translate(240, 205)" opacity="0.4">
+        <circle cx="0" cy="0" r="9" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="-8" rx="7" ry="5" fill="${hair}"/>
+        <path d="M-11,9 L-9,35 L9,35 L11,9Z" fill="${white}" stroke="${inkMd}" stroke-width="0.5"/>
+      </g>
+      <!-- 右侧弟子 -->
+      <g transform="translate(440, 205)" opacity="0.4">
+        <circle cx="0" cy="0" r="9" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="-8" rx="7" ry="5" fill="${hair}"/>
+        <path d="M-11,9 L-9,35 L9,35 L11,9Z" fill="${robe2}" stroke="${inkMd}" stroke-width="0.5"/>
+      </g>
+      <g transform="translate(490, 200)" opacity="0.45">
+        <circle cx="0" cy="0" r="9" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="-8" rx="7" ry="5" fill="${hair}"/>
+        <path d="M-11,9 L-9,38 L9,38 L11,9Z" fill="${white}" stroke="${inkMd}" stroke-width="0.5"/>
+      </g>
+      <g transform="translate(540, 195)" opacity="0.5">
+        <circle cx="0" cy="0" r="10" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="-9" rx="7" ry="5" fill="${hair}"/>
+        <path d="M-12,10 L-10,40 L10,40 L12,10Z" fill="${robe2}" stroke="${inkMd}" stroke-width="0.5"/>
+      </g>
+      <!-- "知行合一"大字 -->
+      <text x="340" y="268" text-anchor="middle" font-size="18" fill="${gold}" opacity="0.15" font-family="var(--font-title)">知是行的主意  行是知的功夫</text>
+    </svg>`,
+
+    // ===== Chapter 7: 心即理 — 以树喻心，心为根 =====
+    7: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 大树 — 心为根，枝叶为孝之仪节 -->
+      <g transform="translate(340, 155)">
+        <!-- 树根（心） -->
+        <ellipse cx="0" cy="100" rx="60" ry="20" fill="none" stroke="${gold}" stroke-width="1.5" opacity="0.2"/>
+        <path d="M-40,100 Q-55,110 -65,120" fill="none" stroke="${gold}" stroke-width="1" opacity="0.15"/>
+        <path d="M40,100 Q55,110 65,120" fill="none" stroke="${gold}" stroke-width="1" opacity="0.15"/>
+        <path d="M-20,115 Q-30,130 -35,140" fill="none" stroke="${gold}" stroke-width="0.8" opacity="0.12"/>
+        <path d="M20,115 Q30,130 35,140" fill="none" stroke="${gold}" stroke-width="0.8" opacity="0.12"/>
+        <!-- 树干 -->
+        <rect x="-8" y="-50" width="16" height="150" fill="${inkMd}" opacity="0.15" rx="3"/>
+        <!-- 树冠（枝叶） -->
+        <path d="M0,-50 Q-50,-70 -80,-50" fill="none" stroke="#4a7c2e" stroke-width="2" opacity="0.25"/>
+        <path d="M0,-50 Q50,-70 80,-50" fill="none" stroke="#4a7c2e" stroke-width="2" opacity="0.25"/>
+        <path d="M0,-40 Q-40,-55 -70,-40" fill="none" stroke="#4a7c2e" stroke-width="1.5" opacity="0.2"/>
+        <path d="M0,-40 Q40,-55 70,-40" fill="none" stroke="#4a7c2e" stroke-width="1.5" opacity="0.2"/>
+        <path d="M0,-30 Q-35,-45 -60,-30" fill="none" stroke="#4a7c2e" stroke-width="1.2" opacity="0.18"/>
+        <path d="M0,-30 Q35,-45 60,-30" fill="none" stroke="#4a7c2e" stroke-width="1.2" opacity="0.18"/>
+        <!-- 枝叶文字 — 孝之仪节 -->
+        <text x="-75" y="-55" font-size="9" fill="${inkLt}" opacity="0.2" font-family="serif">冬温夏凊</text>
+        <text x="55" y="-55" font-size="9" fill="${inkLt}" opacity="0.2" font-family="serif">昏定晨省</text>
+        <text x="-65" y="-35" font-size="9" fill="${inkLt}" opacity="0.18" font-family="serif">愉色婉容</text>
+        <text x="50" y="-35" font-size="9" fill="${inkLt}" opacity="0.18" font-family="serif">和气致祥</text>
+        <!-- 根部标注 — 深爱 -->
+        <text x="0" y="105" text-anchor="middle" font-size="14" fill="${gold}" opacity="0.2" font-family="var(--font-title)">深爱</text>
+      </g>
+      <!-- 王阳明 — 指着自己的心 -->
+      <g transform="translate(130, 105)">
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <rect x="-18" y="0" width="36" height="12" rx="3" fill="${inkDk}" opacity="0.5"/>
+        <path d="M-8,18 Q-5,15 -2,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M2,18 Q5,15 8,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="5" cy="21" r="1.2" fill="${inkDk}"/>
+        <!-- 短须 -->
+        <path d="M-6,31 Q-8,38 -5,42" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M6,31 Q8,38 5,42" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M-20,42 Q-22,72 -20,105 L20,105 Q22,72 20,42Z" fill="${white}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 手指心口 -->
+        <path d="M-20,55 Q-28,48 -25,42" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <!-- 心口发光 -->
+        <circle cx="-18" cy="50" r="5" fill="${red}" opacity="0.2">
+          <animate attributeName="opacity" values="0.2;0.4;0.2" dur="2s" repeatCount="indefinite"/>
+        </circle>
+        <text x="0" y="130" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">心即理</text>
+      </g>
+      <!-- 徐爱 — 恭敬听讲 -->
+      <g transform="translate(550, 115)" opacity="0.7">
+        <ellipse cx="0" cy="20" rx="14" ry="17" fill="${skin}" stroke="${inkMd}" stroke-width="0.6"/>
+        <ellipse cx="0" cy="5" rx="10" ry="7" fill="${hair}"/>
+        <path d="M-18,37 L-15,75 L15,75 L18,37Z" fill="${white}" stroke="${inkMd}" stroke-width="0.6"/>
+        <!-- 作揖 -->
+        <path d="M-18,48 Q-30,58 -26,68" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <text x="0" y="100" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">徐爱</text>
+      </g>
+    </svg>`,
+
+    // ===== Chapter 8: 主一功夫 — 天理如金 =====
+    8: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 万镒精金比喻 -->
+      <g transform="translate(340, 140)">
+        <!-- 金锭 -->
+        <path d="M-40,20 L-30,-10 L30,-10 L40,20Z" fill="${gold}" opacity="0.15" stroke="${gold}" stroke-width="1"/>
+        <path d="M-30,-10 L-20,-25 L20,-25 L30,-10" fill="${gold}" opacity="0.1" stroke="${gold}" stroke-width="0.8"/>
+        <text x="0" y="8" text-anchor="middle" font-size="14" fill="${gold}" opacity="0.3" font-family="var(--font-title)">天理</text>
+      </g>
+      <!-- 混杂金属（锡铅铜铁） -->
+      <g opacity="0.08">
+        <circle cx="100" cy="100" r="12" fill="${inkLt}"/>
+        <text x="100" y="104" text-anchor="middle" font-size="8" fill="${inkLt}">色</text>
+        <circle cx="580" cy="100" r="12" fill="${inkLt}"/>
+        <text x="580" y="104" text-anchor="middle" font-size="8" fill="${inkLt}">货</text>
+        <circle cx="80" cy="200" r="12" fill="${inkLt}"/>
+        <text x="80" y="204" text-anchor="middle" font-size="8" fill="${inkLt}">名</text>
+        <circle cx="600" cy="200" r="12" fill="${inkLt}"/>
+        <text x="600" y="204" text-anchor="middle" font-size="8" fill="${inkLt}">利</text>
+      </g>
+      <!-- 王阳明 — 讲解主一 -->
+      <g transform="translate(180, 110)">
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <rect x="-18" y="0" width="36" height="12" rx="3" fill="${inkDk}" opacity="0.5"/>
+        <path d="M-8,18 Q-5,15 -2,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M2,18 Q5,15 8,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M-6,31 Q-8,38 -5,42" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M6,31 Q8,38 5,42" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M-20,42 Q-22,72 -20,105 L20,105 Q22,72 20,42Z" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <path d="M-8,42 L0,56 L8,42" fill="none" stroke="${inkMd}" stroke-width="0.8"/>
+        <path d="M20,55 Q50,48 80,58" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <text x="0" y="128" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">主一</text>
+      </g>
+      <!-- 陆澄 — 疑惑 -->
+      <g transform="translate(510, 115)" opacity="0.7">
+        <ellipse cx="0" cy="20" rx="14" ry="17" fill="${skin}" stroke="${inkMd}" stroke-width="0.6"/>
+        <ellipse cx="0" cy="5" rx="10" ry="7" fill="${hair}"/>
+        <path d="M-18,37 L-15,75 L15,75 L18,37Z" fill="${white}" stroke="${inkMd}" stroke-width="0.6"/>
+        <!-- 疑惑手势 -->
+        <path d="M18,48 Q28,42 25,34" fill="none" stroke="${skin}" stroke-width="2.5" stroke-linecap="round"/>
+        <text x="0" y="100" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">陆澄</text>
+      </g>
+      <!-- 文字 -->
+      <text x="340" y="255" text-anchor="middle" font-size="12" fill="${inkLt}" opacity="0.2" font-family="serif">主一，是专主一个天理</text>
+    </svg>`,
+
+    // ===== Chapter 9: 平宁王 — 鄱阳湖水战，火攻破敌 =====
+    9: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 鄱阳湖 -->
+      <path d="M0,220 Q170,200 340,215 Q510,200 680,220 L680,300 L0,300Z" fill="${inkMd}" opacity="0.08"/>
+      <path d="M0,235 Q120,225 240,232 Q360,220 480,230 Q600,222 680,232 L680,300 L0,300Z" fill="${inkMd}" opacity="0.05"/>
+      <!-- 波浪 -->
+      <path d="M0,225 Q40,220 80,225 Q120,230 160,225 Q200,220 240,225 Q280,230 320,225 Q360,220 400,225 Q440,230 480,225 Q520,220 560,225 Q600,230 640,225 Q660,222 680,225" fill="none" stroke="${inkLt}" stroke-width="0.5" opacity="0.15"/>
+      <!-- 宁王战船（远处） -->
+      <g opacity="0.2">
+        <path d="M80,195 L140,195 L130,215 L90,215Z" fill="${inkLt}"/>
+        <rect x="95" y="175" width="30" height="20" fill="none" stroke="${inkLt}" stroke-width="0.6"/>
+        <line x1="110" y1="175" x2="110" y2="160" stroke="${inkLt}" stroke-width="0.6"/>
+        <path d="M105,165 Q110,155 115,165" fill="none" stroke="${inkLt}" stroke-width="0.5"/>
+      </g>
+      <g opacity="0.15" transform="translate(60,10)">
+        <path d="M80,195 L140,195 L130,215 L90,215Z" fill="${inkLt}"/>
+        <rect x="95" y="175" width="30" height="20" fill="none" stroke="${inkLt}" stroke-width="0.6"/>
+      </g>
+      <g opacity="0.12" transform="translate(120,5)">
+        <path d="M80,195 L140,195 L130,215 L90,215Z" fill="${inkLt}"/>
+      </g>
+      <!-- 火攻 — 烈焰冲天 -->
+      <g opacity="0.35">
+        <path d="M220,200 Q260,170 290,190 Q310,165 340,185" fill="none" stroke="#e74c3c" stroke-width="2.5"/>
+        <path d="M230,195 Q270,165 300,185" fill="none" stroke="#f39c12" stroke-width="2"/>
+        <circle cx="270" cy="180" r="8" fill="#e74c3c" opacity="0.4"/>
+        <circle cx="290" cy="175" r="6" fill="#f39c12" opacity="0.3"/>
+        <circle cx="250" cy="185" r="5" fill="#e74c3c" opacity="0.3"/>
+        <!-- 火花 -->
+        <circle cx="275" cy="165" r="2" fill="#f1c40f" opacity="0.5"/>
+        <circle cx="285" cy="160" r="1.5" fill="#f1c40f" opacity="0.4"/>
+        <circle cx="265" cy="170" r="1.5" fill="#f1c40f" opacity="0.4"/>
+      </g>
+      <!-- 王阳明 — 将领装扮，从容指挥 -->
+      <g transform="translate(520, 95)">
+        <!-- 头 -->
+        <ellipse cx="0" cy="24" rx="17" ry="21" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 将巾 -->
+        <rect x="-19" y="1" width="38" height="12" rx="3" fill="${inkDk}" opacity="0.6"/>
+        <path d="M-19,13 Q-15,6 0,3 Q15,6 19,13" fill="${inkDk}" opacity="0.4"/>
+        <!-- 眼 — 坚毅 -->
+        <path d="M-8,18 Q-5,16 -2,18" fill="none" stroke="${inkDk}" stroke-width="1.3"/>
+        <circle cx="-5" cy="21" r="1.3" fill="${inkDk}"/>
+        <path d="M2,18 Q5,16 8,18" fill="none" stroke="${inkDk}" stroke-width="1.3"/>
+        <circle cx="5" cy="21" r="1.3" fill="${inkDk}"/>
+        <!-- 须髯在风中飘动 -->
+        <path d="M-8,32 Q-14,42 -10,50" fill="none" stroke="${hair}" stroke-width="1.3"/>
+        <path d="M0,33 Q-2,45 0,52" fill="none" stroke="${hair}" stroke-width="1.1"/>
+        <path d="M8,32 Q14,42 12,50" fill="none" stroke="${hair}" stroke-width="1.3"/>
+        <!-- 身体 — 将领红袍 -->
+        <path d="M-22,46 Q-25,80 -27,115 L27,115 Q25,80 22,46Z" fill="${red}" stroke="${inkMd}" stroke-width="0.8" opacity="0.6"/>
+        <!-- 披风飘扬 -->
+        <path d="M-22,46 Q-42,60 -38,100 L-27,100" fill="none" stroke="${red}" stroke-width="1.5" opacity="0.3"/>
+        <path d="M22,46 Q42,60 38,100 L27,100" fill="none" stroke="${red}" stroke-width="1.5" opacity="0.3"/>
+        <!-- 右手指挥 -->
+        <path d="M22,58 Q45,48 58,55" fill="none" stroke="${skin}" stroke-width="4" stroke-linecap="round"/>
+        <path d="M58,55 L62,52" stroke="${skin}" stroke-width="2"/>
+        <!-- 腿 -->
+        <rect x="-17" y="115" width="13" height="35" rx="3" fill="${inkDk}" opacity="0.7"/>
+        <rect x="4" y="115" width="13" height="35" rx="3" fill="${inkDk}" opacity="0.7"/>
+      </g>
+      <!-- "三十五日" -->
+      <text x="340" y="40" text-anchor="middle" font-size="18" fill="${gold}" opacity="0.2" font-family="var(--font-title)">三十五日平叛</text>
+      <text x="340" y="62" text-anchor="middle" font-size="11" fill="${inkLt}" opacity="0.2" font-family="serif">知而不行只是未知</text>
+    </svg>`,
+
+    // ===== Chapter 10: 虔州论学 — 人胸中各有个圣人 =====
+    10: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 书房 -->
+      <rect x="120" y="70" width="440" height="200" fill="none" stroke="${inkLt}" stroke-width="0.6" opacity="0.08" rx="4"/>
+      <!-- 书案 -->
+      <rect x="200" y="195" width="280" height="8" fill="${inkMd}" opacity="0.1" rx="2"/>
+      <rect x="190" y="203" width="300" height="4" fill="${inkMd}" opacity="0.06"/>
+      <!-- 书卷 -->
+      <rect x="220" y="180" width="40" height="15" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.4" opacity="0.2"/>
+      <rect x="268" y="178" width="35" height="17" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.4" opacity="0.18"/>
+      <!-- 王阳明 — 指点弟子，语出惊人 -->
+      <g transform="translate(280, 100)">
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <rect x="-18" y="0" width="36" height="12" rx="3" fill="${inkDk}" opacity="0.5"/>
+        <path d="M-8,18 Q-5,15 -2,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M2,18 Q5,15 8,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="5" cy="21" r="1.2" fill="${inkDk}"/>
+        <!-- 美须 -->
+        <path d="M-7,31 Q-10,40 -7,46" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M0,32 Q-1,42 0,48" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M7,31 Q10,40 7,46" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M-20,42 Q-22,72 -20,100 L20,100 Q22,72 20,42Z" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <path d="M-8,42 L0,55 L8,42" fill="none" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 手指弟子心口 -->
+        <path d="M20,55 Q50,48 75,52" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <text x="0" y="125" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">王阳明</text>
+      </g>
+      <!-- 于中 — 谦逊不敢当 -->
+      <g transform="translate(450, 110)" opacity="0.8">
+        <ellipse cx="0" cy="20" rx="14" ry="17" fill="${skin}" stroke="${inkMd}" stroke-width="0.6"/>
+        <ellipse cx="0" cy="5" rx="10" ry="7" fill="${hair}"/>
+        <!-- 羞涩表情 -->
+        <path d="M-6,17 Q-3,15 0,17" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+        <circle cx="-3" cy="20" r="1" fill="${inkDk}"/>
+        <path d="M2,17 Q5,15 8,17" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+        <circle cx="5" cy="20" r="1" fill="${inkDk}"/>
+        <path d="M-18,37 L-15,75 L15,75 L18,37Z" fill="${white}" stroke="${inkMd}" stroke-width="0.6"/>
+        <!-- 作揖 -->
+        <path d="M-18,48 Q-32,60 -28,72" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <text x="0" y="100" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">于中</text>
+        <!-- "不敢当" -->
+        <text x="0" y="-12" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.2" font-family="serif">"不敢当"</text>
+      </g>
+      <!-- 核心话语 -->
+      <text x="130" y="130" font-size="18" fill="${gold}" opacity="0.15" font-family="var(--font-title)">人胸中</text>
+      <text x="130" y="155" font-size="18" fill="${gold}" opacity="0.15" font-family="var(--font-title)">各有个圣人</text>
+      <!-- 良知如日被云遮 -->
+      <g transform="translate(600, 80)">
+        <circle cx="0" cy="0" r="15" fill="${gold}" opacity="0.15"/>
+        <path d="M-15,0 Q-8,-8 0,-5 Q8,-8 15,0 Q8,8 0,5 Q-8,8 -15,0Z" fill="${inkLt}" opacity="0.15"/>
+        <text x="0" y="30" text-anchor="middle" font-size="8" fill="${inkLt}" opacity="0.2">云遮日</text>
+      </g>
+    </svg>`,
+
+    // ===== Chapter 11: 簿书讼狱 — 公务中致良知 =====
+    11: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 公文案牍堆叠 -->
+      <g opacity="0.2">
+        <rect x="150" y="150" width="380" height="12" fill="${inkMd}" rx="2"/>
+        <!-- 文书堆 -->
+        <rect x="170" y="125" width="55" height="25" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.5"/>
+        <rect x="232" y="120" width="48" height="30" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.5"/>
+        <rect x="286" y="122" width="52" height="28" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.5"/>
+        <rect x="344" y="118" width="45" height="32" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.5"/>
+        <rect x="395" y="121" width="50" height="29" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.5"/>
+        <rect x="451" y="124" width="42" height="26" rx="2" fill="${white}" stroke="${inkLt}" stroke-width="0.5"/>
+      </g>
+      <!-- 笔架 -->
+      <g opacity="0.2" transform="translate(480, 120)">
+        <line x1="0" y1="0" x2="0" y2="30" stroke="${inkDk}" stroke-width="2"/>
+        <line x1="-15" y1="8" x2="15" y2="8" stroke="${inkDk}" stroke-width="1.5"/>
+        <circle cx="0" cy="-3" r="4" fill="${inkLt}"/>
+      </g>
+      <!-- 王阳明 — 案前办公，心中良知明亮 -->
+      <g transform="translate(340, 65)">
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <rect x="-18" y="0" width="36" height="12" rx="3" fill="${inkDk}" opacity="0.5"/>
+        <path d="M-8,18 Q-5,15 -2,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M2,18 Q5,15 8,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="5" cy="21" r="1.2" fill="${inkDk}"/>
+        <!-- 须 -->
+        <path d="M-6,31 Q-8,38 -5,42" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M6,31 Q8,38 5,42" fill="none" stroke="${hair}" stroke-width="1"/>
+        <path d="M-20,42 Q-22,65 -22,88 L22,88 Q22,65 20,42Z" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <path d="M-8,42 L0,55 L8,42" fill="none" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 双手执笔 -->
+        <path d="M-20,58 Q-30,68 -35,82" fill="none" stroke="${skin}" stroke-width="3.5" stroke-linecap="round"/>
+        <path d="M20,58 Q30,68 35,82" fill="none" stroke="${skin}" stroke-width="3.5" stroke-linecap="round"/>
+        <!-- 笔 -->
+        <line x1="35" y1="82" x2="38" y2="68" stroke="${inkDk}" stroke-width="1.5" opacity="0.4"/>
+      </g>
+      <!-- 心中良知发光 -->
+      <circle cx="340" cy="78" r="12" fill="${gold}" opacity="0.15">
+        <animate attributeName="r" values="12;16;12" dur="3s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.15;0.3;0.15" dur="3s" repeatCount="indefinite"/>
+      </circle>
+      <text x="340" y="82" text-anchor="middle" font-size="9" fill="${gold}" opacity="0.4" font-family="var(--font-title)">良知</text>
+      <!-- 文字 -->
+      <text x="130" y="80" font-size="16" fill="${red}" opacity="0.15" font-family="var(--font-title)">事上磨练</text>
+      <text x="130" y="105" font-size="10" fill="${inkLt}" opacity="0.2" font-family="serif">簿书讼狱之间</text>
+      <text x="130" y="120" font-size="10" fill="${inkLt}" opacity="0.2" font-family="serif">无非实学</text>
+    </svg>`,
+
+    // ===== Chapter 12: 致良知 — 明镜比喻 =====
+    12: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 大明镜 -->
+      <g transform="translate(340, 145)">
+        <!-- 镜框 -->
+        <ellipse cx="0" cy="0" rx="95" ry="70" fill="none" stroke="${gold}" stroke-width="2.5" opacity="0.25"/>
+        <ellipse cx="0" cy="0" rx="88" ry="63" fill="none" stroke="${gold}" stroke-width="1" opacity="0.15"/>
+        <!-- 镜面 -->
+        <ellipse cx="0" cy="0" rx="82" ry="58" fill="${inkMd}" opacity="0.06"/>
+        <!-- 良知二字 -->
+        <text x="0" y="8" text-anchor="middle" font-size="32" fill="${gold}" opacity="0.2" font-family="var(--font-title)">良知</text>
+        <!-- 雾气遮蔽 -->
+        <circle cx="-35" cy="-25" r="18" fill="${inkLt}" opacity="0.06"/>
+        <circle cx="30" cy="15" r="15" fill="${inkLt}" opacity="0.05"/>
+        <circle cx="10" cy="-30" r="12" fill="${inkLt}" opacity="0.04"/>
+        <!-- 镜框纹饰 -->
+        <circle cx="0" cy="-68" r="6" fill="none" stroke="${gold}" stroke-width="0.8" opacity="0.15"/>
+        <circle cx="0" cy="68" r="6" fill="none" stroke="${gold}" stroke-width="0.8" opacity="0.15"/>
+      </g>
+      <!-- 王阳明 — 指向明镜 -->
+      <g transform="translate(120, 125)">
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <rect x="-18" y="0" width="36" height="12" rx="3" fill="${inkDk}" opacity="0.5"/>
+        <path d="M-8,18 Q-5,15 -2,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M2,18 Q5,15 8,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M-7,31 Q-10,40 -7,46" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M7,31 Q10,40 7,46" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M-20,42 Q-22,72 -20,100 L20,100 Q22,72 20,42Z" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 手指镜中 -->
+        <path d="M20,55 Q60,48 110,52" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <text x="0" y="125" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.3">致良知</text>
+      </g>
+      <!-- 弟子们静听 -->
+      <g opacity="0.3">
+        <g transform="translate(550, 140)">
+          <circle cx="0" cy="0" r="10" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+          <ellipse cx="0" cy="-9" rx="7" ry="5" fill="${hair}"/>
+          <path d="M-12,10 L-10,40 L10,40 L12,10Z" fill="${white}" stroke="${inkMd}" stroke-width="0.5"/>
+        </g>
+        <g transform="translate(580, 148)">
+          <circle cx="0" cy="0" r="9" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+          <ellipse cx="0" cy="-8" rx="6" ry="5" fill="${hair}"/>
+          <path d="M-11,9 L-9,35 L9,35 L11,9Z" fill="${robe2}" stroke="${inkMd}" stroke-width="0.5"/>
+        </g>
+      </g>
+      <!-- 文字 -->
+      <text x="340" y="265" text-anchor="middle" font-size="11" fill="${inkLt}" opacity="0.2" font-family="serif">良知如镜，本自光明，私欲蔽之，磨而复明</text>
+    </svg>`,
+
+    // ===== Chapter 13: 四句教 — 心学完整框架 =====
+    13: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <!-- 四句教四格 -->
+      <!-- 格1: 心之体 -->
+      <g transform="translate(30, 30)">
+        <rect x="0" y="0" width="140" height="90" rx="6" fill="${inkMd}" opacity="0.06" stroke="${inkLt}" stroke-width="0.8" stroke-opacity="0.15"/>
+        <!-- 镜子（干净） -->
+        <ellipse cx="70" cy="35" rx="28" ry="22" fill="none" stroke="${gold}" stroke-width="1" opacity="0.2"/>
+        <text x="70" y="40" text-anchor="middle" font-size="10" fill="${gold}" opacity="0.15" font-family="var(--font-title)">净</text>
+        <text x="70" y="72" text-anchor="middle" font-size="11" fill="${inkLt}" opacity="0.3">心之体</text>
+        <text x="70" y="86" text-anchor="middle" font-size="9" fill="${inkLt}" opacity="0.2">无善无恶</text>
+      </g>
+      <!-- 箭头1 -->
+      <path d="M175,75 L195,75" fill="none" stroke="${gold}" stroke-width="1" opacity="0.2"/>
+      <polygon points="195,75 189,71 189,79" fill="${gold}" opacity="0.2"/>
+      <!-- 格2: 意之动 -->
+      <g transform="translate(200, 30)">
+        <rect x="0" y="0" width="140" height="90" rx="6" fill="${inkMd}" opacity="0.06" stroke="${inkLt}" stroke-width="0.8" stroke-opacity="0.15"/>
+        <!-- 镜子（有雾） -->
+        <ellipse cx="70" cy="35" rx="28" ry="22" fill="${inkLt}" opacity="0.08" stroke="${inkLt}" stroke-width="1" stroke-opacity="0.15"/>
+        <text x="70" y="40" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.15" font-family="var(--font-title)">动</text>
+        <text x="70" y="72" text-anchor="middle" font-size="11" fill="${inkLt}" opacity="0.3">意之动</text>
+        <text x="70" y="86" text-anchor="middle" font-size="9" fill="${inkLt}" opacity="0.2">有善有恶</text>
+      </g>
+      <!-- 箭头2 -->
+      <path d="M345,75 L365,75" fill="none" stroke="${gold}" stroke-width="1" opacity="0.2"/>
+      <polygon points="365,75 359,71 359,79" fill="${gold}" opacity="0.2"/>
+      <!-- 格3: 良知 -->
+      <g transform="translate(370, 30)">
+        <rect x="0" y="0" width="140" height="90" rx="6" fill="${inkMd}" opacity="0.06" stroke="${inkLt}" stroke-width="0.8" stroke-opacity="0.15"/>
+        <!-- 眼睛（辨别） -->
+        <ellipse cx="70" cy="35" rx="28" ry="22" fill="none" stroke="${gold}" stroke-width="1" opacity="0.2"/>
+        <text x="70" y="40" text-anchor="middle" font-size="10" fill="${gold}" opacity="0.2" font-family="var(--font-title)">明</text>
+        <text x="70" y="72" text-anchor="middle" font-size="11" fill="${inkLt}" opacity="0.3">良知</text>
+        <text x="70" y="86" text-anchor="middle" font-size="9" fill="${inkLt}" opacity="0.2">知善知恶</text>
+      </g>
+      <!-- 箭头3 -->
+      <path d="M515,75 L535,75" fill="none" stroke="${gold}" stroke-width="1" opacity="0.2"/>
+      <polygon points="535,75 529,71 529,79" fill="${gold}" opacity="0.2"/>
+      <!-- 格4: 格物 -->
+      <g transform="translate(540, 30)">
+        <rect x="0" y="0" width="110" height="90" rx="6" fill="${inkMd}" opacity="0.06" stroke="${inkLt}" stroke-width="0.8" stroke-opacity="0.15"/>
+        <!-- 手（行动） -->
+        <text x="55" y="40" text-anchor="middle" font-size="10" fill="${red}" opacity="0.2" font-family="var(--font-title)">行</text>
+        <text x="55" y="72" text-anchor="middle" font-size="11" fill="${inkLt}" opacity="0.3">格物</text>
+        <text x="55" y="86" text-anchor="middle" font-size="9" fill="${inkLt}" opacity="0.2">为善去恶</text>
+      </g>
+      <!-- 王阳明 — 讲授四句教 -->
+      <g transform="translate(340, 200)">
+        <ellipse cx="0" cy="22" rx="16" ry="20" fill="${skin}" stroke="${inkMd}" stroke-width="0.8"/>
+        <rect x="-18" y="0" width="36" height="12" rx="3" fill="${inkDk}" opacity="0.5"/>
+        <path d="M-8,18 Q-5,15 -2,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="-5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M2,18 Q5,15 8,18" fill="none" stroke="${inkDk}" stroke-width="1"/>
+        <circle cx="5" cy="21" r="1.2" fill="${inkDk}"/>
+        <path d="M-7,31 Q-10,40 -7,46" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M7,31 Q10,40 7,46" fill="none" stroke="${hair}" stroke-width="1.2"/>
+        <path d="M-20,42 Q-22,68 -22,85 L22,85 Q22,68 20,42Z" fill="${robe1}" stroke="${inkMd}" stroke-width="0.8"/>
+        <path d="M-8,42 L0,55 L8,42" fill="none" stroke="${inkMd}" stroke-width="0.8"/>
+        <!-- 双手展开讲解 -->
+        <path d="M-20,55 Q-45,48 -65,52" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+        <path d="M20,55 Q45,48 65,52" fill="none" stroke="${skin}" stroke-width="3" stroke-linecap="round"/>
+      </g>
+    </svg>`,
+
+    // ===== Chapter 14: 此心光明 — 临终遗言，千古绝唱 =====
+    14: `<svg viewBox="0 0 680 300" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="finalLight" cx="340" cy="120" r="160" gradientUnits="userSpaceOnUse">
+          <stop offset="0%" stop-color="${gold}" stop-opacity="0.18"/>
+          <stop offset="50%" stop-color="${gold}" stop-opacity="0.05"/>
+          <stop offset="100%" stop-color="${gold}" stop-opacity="0"/>
+        </radialGradient>
+      </defs>
+      <rect width="680" height="300" rx="8" fill="${bgDark}"/>
+      <rect width="680" height="300" rx="8" fill="url(#finalLight)"/>
+      <!-- 简陋客栈/舟中 — 南安府 -->
+      <rect x="230" y="155" width="220" height="90" fill="none" stroke="${inkLt}" stroke-width="1" opacity="0.1" rx="3"/>
+      <path d="M225,155 L340,120 L455,155" fill="none" stroke="${inkLt}" stroke-width="0.8" opacity="0.08"/>
+      <!-- 床榻 -->
+      <rect x="270" y="175" width="140" height="55" fill="none" stroke="${inkLt}" stroke-width="0.8" opacity="0.1" rx="3"/>
+      <!-- 王阳明 — 卧病在床，面容清瘦，目光平静 -->
+      <g transform="translate(340, 185)">
+        <!-- 头（枕上） -->
+        <ellipse cx="0" cy="-15" rx="14" ry="17" fill="${skin}" stroke="${inkMd}" stroke-width="0.8" opacity="0.85"/>
+        <!-- 白发稀疏 -->
+        <ellipse cx="0" cy="-28" rx="10" ry="6" fill="#b0a898" opacity="0.5"/>
+        <path d="M-8,-28 Q-5,-35 0,-33 Q5,-35 8,-28" fill="none" stroke="#b0a898" stroke-width="1" opacity="0.4"/>
+        <!-- 眼 — 平静而深邃 -->
+        <path d="M-6,-17 Q-3,-19 0,-17" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+        <circle cx="-3" cy="-15" r="1" fill="${inkDk}"/>
+        <path d="M0,-17 Q3,-19 6,-17" fill="none" stroke="${inkDk}" stroke-width="0.8"/>
+        <circle cx="3" cy="-15" r="1" fill="${inkDk}"/>
+        <!-- 嘴角微微上扬 — 微笑 -->
+        <path d="M-3,-9 Q0,-7 3,-9" fill="none" stroke="${inkMd}" stroke-width="0.6"/>
+        <!-- 身体（盖被） -->
+        <rect x="-22" y="2" width="44" height="30" rx="5" fill="${white}" stroke="${inkLt}" stroke-width="0.5" opacity="0.25"/>
+      </g>
+      <!-- 钱德洪 — 侍立床旁 -->
+      <g transform="translate(490, 180)" opacity="0.6">
+        <ellipse cx="0" cy="18" rx="12" ry="15" fill="${skin}" stroke="${inkMd}" stroke-width="0.5"/>
+        <ellipse cx="0" cy="5" rx="8" ry="6" fill="${hair}"/>
+        <path d="M-15,33 L-13,60 L13,60 L15,33Z" fill="${white}" stroke="${inkMd}" stroke-width="0.5"/>
+        <!-- 泪水暗示 -->
+        <circle cx="-3" cy="15" r="1" fill="${inkLt}" opacity="0.3"/>
+        <text x="0" y="82" text-anchor="middle" font-size="9" fill="${inkLt}" opacity="0.25">钱德洪</text>
+      </g>
+      <!-- "此心光明，亦复何言" — 永恒之光 -->
+      <g opacity="0.3">
+        <text x="340" y="60" text-anchor="middle" font-size="28" fill="${gold}" font-family="var(--font-title)">此心光明</text>
+      </g>
+      <g opacity="0.2">
+        <text x="340" y="90" text-anchor="middle" font-size="18" fill="${gold}" font-family="var(--font-title)">亦复何言</text>
+      </g>
+      <!-- 光晕脉动 -->
+      <circle cx="340" cy="68" r="50" fill="none" stroke="${gold}" stroke-width="0.5" opacity="0.12">
+        <animate attributeName="r" values="50;65;50" dur="4s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.12;0.22;0.12" dur="4s" repeatCount="indefinite"/>
+      </circle>
+      <circle cx="340" cy="68" r="80" fill="none" stroke="${gold}" stroke-width="0.3" opacity="0.06">
+        <animate attributeName="r" values="80;95;80" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+        <animate attributeName="opacity" values="0.06;0.12;0.06" dur="4s" repeatCount="indefinite" begin="0.5s"/>
+      </circle>
+      <!-- 年份 -->
+      <text x="340" y="280" text-anchor="middle" font-size="10" fill="${inkLt}" opacity="0.18" font-family="serif">嘉靖七年 · 南安府 · 一五二九年</text>
+    </svg>`
+  };
+  return svgs[id] || '';
+}
+</script>
+</body>
+</html>
